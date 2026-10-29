@@ -2,33 +2,35 @@
 
 namespace App\Listeners;
 
+use App\Services\AuditService;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\Log;
 
-class LogUserLogin implements ShouldQueue
+class LogUserLogin
 {
-    use InteractsWithQueue;
-
     /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
-     * Handle the event.
+     * Handle the event synchronously so login history is always recorded reliably.
      */
     public function handle(Login $event): void
-    { DB::table('user_logins')->insert([
-            'user_id'    => $event->user->getAuthIdentifier(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-            'logged_in_at' => now(),
+    {
+        $user = $event->user;
+        $entrepriseId = $user->entreprise_id ?? null;
+
+        DB::table('user_logins')->insert([
+            'entreprise_id' => $entrepriseId,
+            'user_id'       => $user->getAuthIdentifier(),
+            'ip_address'    => request()->ip(),
+            'user_agent'    => request()->userAgent(),
+            'logged_in_at'  => now(),
         ]);
+
+        AuditService::log(
+            'auth.login',
+            "Connexion de l'utilisateur {$user->email}",
+            $user,
+            null,
+            null,
+            $entrepriseId
+        );
     }
 }

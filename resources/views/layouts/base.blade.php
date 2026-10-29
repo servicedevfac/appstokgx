@@ -42,6 +42,20 @@
 
     <!-- App Config -->
     <script src="{{ url('assets/js/config.js') }}"></script>
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('themeMode') || sessionStorage.getItem('themeMode');
+                var mode = savedTheme === 'dark' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-bs-theme', mode);
+                document.documentElement.setAttribute('data-topbar-color', mode === 'dark' ? 'dark' : 'light');
+                if (typeof Chart !== 'undefined') {
+                    Chart.defaults.color = mode === 'dark' ? '#cbd5e1' : '#64748b';
+                    Chart.defaults.borderColor = mode === 'dark' ? 'rgba(148, 163, 184, 0.12)' : 'rgba(0, 0, 0, 0.06)';
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body>
     <div class="layout-wrapper">
@@ -119,7 +133,7 @@
     <script src="{{ url('assets/libs/jquery-knob/jquery.knob.min.js') }}"></script>
     <script src="{{ url('assets/libs/morris.js/morris.min.js') }}"></script>
     <script src="{{ url('assets/libs/raphael/raphael.min.js') }}"></script>
-    <script src="{{ url('assets/js/app.js') }}"></script>
+    <script src="{{ url('assets/js/app.js') }}?v={{ filemtime(public_path('assets/js/app.js')) }}"></script>
     <script src="{{ url('assets/libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ url('assets/libs/datatables.net-bs5/js/dataTables.bootstrap5.min.js') }}"></script>
     <script src="{{ url('assets/libs/datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>

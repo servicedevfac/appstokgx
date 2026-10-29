@@ -79,7 +79,7 @@
         <div class="emoji">🔐</div>
         <h1>403</h1>
         <h2>Accès Interdit</h2>
-        <p>Désolé {{auth()->user()->nom}}, vous n'avez pas l'autorisation d'accéder à cette page. Si vous pensez qu'il s'agit d'une erreur, veuillez contacter l'administrateur.</p>
+        <p>Désolé {{ auth()->user()?->nom ?? 'visiteur' }}, vous n'avez pas l'autorisation d'accéder à cette page. Si vous pensez qu'il s'agit d'une erreur, veuillez contacter l'administrateur.</p>
         <a href="{{route('dashboard')}}" class="btn">Retour à l'accueil</a>
         <div class="signature"> gestion-stock-StockGX</div>
     </div>

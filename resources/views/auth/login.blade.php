@@ -431,6 +431,15 @@
         </button>
       </form>
 
+      <div class="mt-3 text-center">
+        <form method="POST" action="{{ route('demo.login') }}" class="m-0">
+          @csrf
+          <button type="submit" class="btn btn-sm btn-outline-light w-100 py-2" style="border-radius: 12px; border-color: rgba(255,255,255,0.2);">
+            <i class="fas fa-flask me-1 text-warning"></i> Explorer en Mode Démonstration
+          </button>
+        </form>
+      </div>
+
       <div class="login-footer">
         &copy; <script>document.write(new Date().getFullYear())</script> <strong>STOKGX</strong> — Solution de Gestion de Stock
       </div>

@@ -4,18 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\HistoriqueHoraire;
 use App\Models\Horaire;
+use App\Services\EntrepriseContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class HoraireController extends Controller
 {
     /**
-     * Vérification des permissions administrateur
+     * Vérification des permissions administrateur / propriétaire
      */
     private function checkAdminPermission(): void
     {
-        if (!Auth::user()->hasAnyRole(['Administrateur', 'super admin'])) {
-            abort(403, 'Accès refusé. Seul un administrateur peut configurer les horaires du magasin.');
+        $user = Auth::user();
+        if (!$user->hasAnyRole(['Propriétaire', 'Administrateur', 'super admin']) && !$user->can('configurer horaires')) {
+            abort(403, 'Accès refusé. Seul un administrateur ou propriétaire peut configurer les horaires.');
         }
     }
 
@@ -68,6 +70,7 @@ class HoraireController extends Controller
             'heure_fermeture.*.date_format' => 'L\'heure de fermeture doit être au format valide (HH:MM).',
         ]);
 
+        $entrepriseId = EntrepriseContext::currentId();
         $jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
 
         foreach ($jours as $jour) {
@@ -81,6 +84,7 @@ class HoraireController extends Controller
                 ($horaireExistant->heure_ouverture != $ouverture || $horaireExistant->heure_fermeture != $fermeture)
             ) {
                 HistoriqueHoraire::create([
+                    'entreprise_id'      => $entrepriseId,
                     'jour_semaine'       => $jour,
                     'ancienne_ouverture' => $horaireExistant->heure_ouverture,
                     'ancienne_fermeture' => $horaireExistant->heure_fermeture,
@@ -91,7 +95,10 @@ class HoraireController extends Controller
             }
 
             Horaire::updateOrCreate(
-                ['jour_semaine' => $jour],
+                [
+                    'entreprise_id' => $entrepriseId,
+                    'jour_semaine' => $jour,
+                ],
                 [
                     'heure_ouverture' => $ouverture,
                     'heure_fermeture' => $fermeture,

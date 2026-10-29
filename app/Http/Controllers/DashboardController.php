@@ -6,6 +6,8 @@ use App\Models\Depense;
 use App\Models\Paiement;
 use App\Models\Produit;
 use App\Models\Vente;
+use App\Services\EntrepriseContext;
+use App\Services\FinanceService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,31 +15,71 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    /**
-     * Tableau de bord principal (Admin & Vendeur)
-     */
     public function index(Request $request)
     {
         $user = Auth::user();
         $driver = DB::getDriverName();
 
-        // 1. Dashboard Administrateur / Super Admin
-        if ($user->hasAnyRole(['Administrateur', 'super admin'])) {
+        if ($user->isSuperAdmin() && ! $user->is_proprietaire) {
+            return redirect()->route('superadmin.dashboard');
+        }
+
+        if ($user->hasAnyRole(['Propriétaire', 'Administrateur'])) {
             return $this->adminDashboard($driver, $request);
         }
 
-        // 2. Dashboard Commercial / Gestionnaire
-        if ($user->hasAnyRole(['Gestionnaire', 'Commercial'])) {
+        if ($user->hasAnyRole(['Gestionnaire', 'Commerciale', 'Commercial'])) {
             return $this->vendeurDashboard($user, $driver, $request);
         }
 
-        // 3. Fallback pour tout autre rôle
         return redirect()->route('ventes.index');
     }
 
     /**
-     * Résout les bornes de date et les libellés selon la période demandée
+     * Tableau de bord consolidé multi-entreprises pour un Propriétaire (Section 3.2 & 7.2)
      */
+    public function consolide(Request $request)
+    {
+        $user = Auth::user();
+        $periodData = $this->resolvePeriod($request);
+        $periode = $periodData['periode'];
+        $dateDebut = $periodData['dateDebut'];
+        $dateFin = $periodData['dateFin'];
+        $periodeLabel = $periodData['periodeLabel'];
+        $periodeTitle = $periodData['periodeTitle'];
+
+        $entreprises = $user->accessibleEntreprises();
+        $accessibleIds = $entreprises->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        $consolide = [
+            'global'         => FinanceService::calculateIndicators($accessibleIds, $dateDebut, $dateFin),
+            'par_entreprise' => [],
+        ];
+
+        foreach ($entreprises as $ent) {
+            $consolide['par_entreprise'][$ent->id] = FinanceService::calculateIndicators([(int) $ent->id], $dateDebut, $dateFin);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'entreprises'  => $entreprises,
+                'consolide'    => $consolide,
+                'periode'      => $periode,
+                'periodeLabel' => $periodeLabel,
+            ]);
+        }
+
+        return view('dashboards.consolide', compact(
+            'entreprises',
+            'consolide',
+            'periode',
+            'periodeLabel',
+            'periodeTitle',
+            'dateDebut',
+            'dateFin'
+        ));
+    }
+
     private function resolvePeriod(Request $request): array
     {
         $periode = $request->input('periode', 'mois');
@@ -84,7 +126,7 @@ class DashboardController extends Controller
                 case 'tout':
                     $dateDebut = null;
                     $dateFin = null;
-                    $periodeLabel = "Toutes les périodes (Global)";
+                    $periodeLabel = 'Toutes les périodes (Global)';
                     $periodeTitle = 'global';
                     break;
                 case 'mois':
@@ -92,66 +134,24 @@ class DashboardController extends Controller
                     $periode = 'mois';
                     $dateDebut = Carbon::now()->startOfMonth()->format('Y-m-d');
                     $dateFin = Carbon::now()->endOfMonth()->format('Y-m-d');
-                    $periodeLabel = "Ce mois (" . Carbon::now()->translatedFormat('F Y') . ")";
+                    $periodeLabel = 'Ce mois (' . Carbon::now()->translatedFormat('F Y') . ')';
                     $periodeTitle = 'mois';
                     break;
             }
         }
 
         return [
-            'periode' => $periode,
-            'dateDebut' => $dateDebut,
-            'dateFin' => $dateFin,
+            'periode'      => $periode,
+            'dateDebut'    => $dateDebut,
+            'dateFin'      => $dateFin,
             'periodeLabel' => $periodeLabel,
             'periodeTitle' => $periodeTitle,
         ];
     }
 
-    /**
-     * Applique les contraintes de date sur une requête
-     */
-    private function applyDateFilter($query, string $dateColumn, string $periode, ?string $dateDebut, ?string $dateFin)
-    {
-        if ($periode === 'custom') {
-            if ($dateDebut) {
-                $query->whereDate($dateColumn, '>=', $dateDebut);
-            }
-            if ($dateFin) {
-                $query->whereDate($dateColumn, '<=', $dateFin);
-            }
-            return;
-        }
-
-        switch ($periode) {
-            case 'jour':
-                $query->whereDate($dateColumn, Carbon::today()->format('Y-m-d'));
-                break;
-            case 'semaine':
-                $query->whereDate($dateColumn, '>=', Carbon::now()->startOfWeek()->format('Y-m-d'))
-                      ->whereDate($dateColumn, '<=', Carbon::now()->endOfWeek()->format('Y-m-d'));
-                break;
-            case 'mois':
-                $query->whereYear($dateColumn, Carbon::now()->year)
-                      ->whereMonth($dateColumn, Carbon::now()->month);
-                break;
-            case 'annee':
-                $query->whereYear($dateColumn, Carbon::now()->year);
-                break;
-            case 'tout':
-                // Pas de restriction de date
-                break;
-            default:
-                $query->whereYear($dateColumn, Carbon::now()->year)
-                      ->whereMonth($dateColumn, Carbon::now()->month);
-                break;
-        }
-    }
-
-    /**
-     * Données du tableau de bord Administrateur
-     */
     private function adminDashboard(string $driver, Request $request)
     {
+        $user = Auth::user();
         $periodData = $this->resolvePeriod($request);
         $periode = $periodData['periode'];
         $dateDebut = $periodData['dateDebut'];
@@ -159,51 +159,71 @@ class DashboardController extends Controller
         $periodeLabel = $periodData['periodeLabel'];
         $periodeTitle = $periodData['periodeTitle'];
 
-        // Ventes globales (10 dernières)
-        $ventes = Vente::all();
-        $derniersVentes = Vente::where('statut', 'valide')->orderByDesc('date_vente')->take(10)->get();
+        // Déterminer le périmètre d'entreprises autorisées (entreprise active ou consolidé)
+        $isConsolide = $request->boolean('consolide', false);
+        $accessibleIds = $user->accessibleEntrepriseIds();
+        $currentId = EntrepriseContext::currentId($user);
 
-        // Clients récents
-        $derniersClients = Vente::with('client')
+        if ($isConsolide) {
+            $targetEntrepriseIds = $accessibleIds;
+        } else {
+            $targetEntrepriseIds = $currentId ? [$currentId] : $accessibleIds;
+        }
+
+        // Calcul strict via FinanceService (RM-046 à RM-054)
+        $indicateursFinanciers = FinanceService::calculateIndicators($targetEntrepriseIds, $dateDebut, $dateFin);
+
+        $caPeriode = $indicateursFinanciers['chiffre_affaires'];
+        $encaissePeriode = $indicateursFinanciers['encaissements'];
+        $resteAPayerPeriode = $indicateursFinanciers['creances_clients'];
+        $depensesPeriode = $indicateursFinanciers['depenses'];
+        $margeBrutePeriode = $indicateursFinanciers['marge_brute_estimee'];
+        $fluxTresoreriePeriode = $indicateursFinanciers['flux_tresorerie_net'];
+        $beneficeNetPeriode = $indicateursFinanciers['resultat_estimatif'];
+        $nbVentesPeriode = $indicateursFinanciers['nb_ventes'];
+        $panierMoyenPeriode = $indicateursFinanciers['panier_moyen'];
+        $dettesFournisseursPeriode = $indicateursFinanciers['dettes_fournisseurs'];
+        $achatsPeriode = $indicateursFinanciers['achats'];
+        $paiementsFournisseursPeriode = $indicateursFinanciers['paiements_fournisseurs'];
+
+        $ventes = Vente::withoutGlobalScope('entreprise')
+            ->whereIn('entreprise_id', $targetEntrepriseIds)
+            ->get();
+        $derniersVentes = Vente::withoutGlobalScope('entreprise')
+            ->whereIn('entreprise_id', $targetEntrepriseIds)
+            ->where('statut', 'valide')
+            ->orderByDesc('date_vente')
+            ->take(10)
+            ->get();
+
+        $derniersClients = Vente::withoutGlobalScope('entreprise')
+            ->with('client')
+            ->whereIn('entreprise_id', $targetEntrepriseIds)
             ->select('client_id')
             ->groupBy('client_id')
             ->orderByRaw('MAX(date_vente) DESC')
             ->take(10)
             ->get();
 
-        // ── Indicateurs filtrés par la période sélectionnée ──
-        $ventesPeriodeQuery = Vente::where('statut', 'valide');
-        $this->applyDateFilter($ventesPeriodeQuery, 'date_vente', $periode, $dateDebut, $dateFin);
+        $derniersDepenses = Depense::withoutGlobalScope('entreprise')
+            ->with('user')
+            ->whereIn('entreprise_id', $targetEntrepriseIds)
+            ->where('statut', 'validee')
+            ->orderByDesc('date_depense')
+            ->take(5)
+            ->get();
 
-        $caPeriode = (float) (clone $ventesPeriodeQuery)->sum('montant_total');
-        $nbVentesPeriode = (int) (clone $ventesPeriodeQuery)->count();
-        $panierMoyenPeriode = $nbVentesPeriode > 0 ? round($caPeriode / $nbVentesPeriode) : 0;
-        $resteAPayerPeriode = (float) (clone $ventesPeriodeQuery)->sum('reste_a_payer');
-
-        // Paiements (Encaissé) sur la période
-        $paiementsPeriodeQuery = Paiement::whereHas('vente', fn ($q) => $q->where('statut', 'valide'));
-        $this->applyDateFilter($paiementsPeriodeQuery, 'created_at', $periode, $dateDebut, $dateFin);
-        $encaissePeriode = (float) (clone $paiementsPeriodeQuery)->sum('montant');
-
-        // Dépenses sur la période
-        $depensesPeriodeQuery = Depense::query();
-        $this->applyDateFilter($depensesPeriodeQuery, 'date_depense', $periode, $dateDebut, $dateFin);
-        $depensesPeriode = (float) (clone $depensesPeriodeQuery)->sum('montant');
-
-        // Bénéfice Net sur la période
-        $beneficeNetPeriode = $encaissePeriode - $depensesPeriode;
-
-        $derniersDepenses = Depense::with('user')->orderByDesc('date_depense')->take(5)->get();
-
-        // Produits en alerte de stock
-        $produitsStockFaible = Produit::select('produits.*')
-            ->join('mouvement_stocks', 'produits.id', '=', 'mouvement_stocks.produit_id')
+        // Produits en alerte de stock (LEFT JOIN pour inclure les produits à 0 mouvement !)
+        $produitsStockFaible = Produit::withoutGlobalScope('entreprise')
+            ->select('produits.*')
+            ->leftJoin('mouvement_stocks', 'produits.id', '=', 'mouvement_stocks.produit_id')
+            ->whereIn('produits.entreprise_id', $targetEntrepriseIds)
             ->selectRaw('
-                SUM(CASE WHEN type_mouvement = \'entree\' THEN quantite ELSE 0 END) -
-                SUM(CASE WHEN type_mouvement = \'sortie\' THEN quantite ELSE 0 END) as stock_actuel
+                COALESCE(SUM(CASE WHEN mouvement_stocks.type_mouvement = \'entree\' THEN mouvement_stocks.quantite ELSE 0 END), 0) -
+                COALESCE(SUM(CASE WHEN mouvement_stocks.type_mouvement = \'sortie\' THEN mouvement_stocks.quantite ELSE 0 END), 0) as stock_actuel
             ')
-            ->groupBy('produits.id', 'produits.nom', 'produits.prix', 'produits.seuil_alerte', 'produits.alerte_envoyee', 'produits.created_at', 'produits.updated_at')
-            ->havingRaw('(SUM(CASE WHEN type_mouvement = \'entree\' THEN quantite ELSE 0 END) - SUM(CASE WHEN type_mouvement = \'sortie\' THEN quantite ELSE 0 END)) <= seuil_alerte')
+            ->groupBy('produits.id', 'produits.entreprise_id', 'produits.categorie_id', 'produits.nom', 'produits.reference', 'produits.prix_achat', 'produits.prix', 'produits.seuil_alerte', 'produits.alerte_envoyee', 'produits.last_alerted_at', 'produits.created_at', 'produits.updated_at')
+            ->havingRaw('(COALESCE(SUM(CASE WHEN mouvement_stocks.type_mouvement = \'entree\' THEN mouvement_stocks.quantite ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN mouvement_stocks.type_mouvement = \'sortie\' THEN mouvement_stocks.quantite ELSE 0 END), 0)) <= produits.seuil_alerte')
             ->get();
 
         // 12 derniers mois (Graphique)
@@ -221,9 +241,9 @@ class DashboardController extends Controller
         };
 
         $dateExprPaiement = match ($driver) {
-            'sqlite' => "strftime('%Y-%m', created_at)",
-            'pgsql'  => "TO_CHAR(created_at, 'YYYY-MM')",
-            default  => "DATE_FORMAT(created_at, '%Y-%m')",
+            'sqlite' => "strftime('%Y-%m', date_paiement)",
+            'pgsql'  => "TO_CHAR(date_paiement, 'YYYY-MM')",
+            default  => "DATE_FORMAT(date_paiement, '%Y-%m')",
         };
 
         $dateExprDepense = match ($driver) {
@@ -234,22 +254,27 @@ class DashboardController extends Controller
 
         $startMonthLimit = Carbon::now()->subMonths(11)->startOfMonth()->format('Y-m-d');
 
-        // Ventes par mois
-        $salesByMonth = Vente::selectRaw("$dateExprVente as month, SUM(montant_total) as total")
+        $salesByMonth = Vente::withoutGlobalScope('entreprise')
+            ->whereIn('entreprise_id', $targetEntrepriseIds)
+            ->selectRaw("$dateExprVente as month, SUM(montant_total) as total")
             ->where('date_vente', '>=', $startMonthLimit)
             ->where('statut', 'valide')
             ->groupBy('month')
             ->pluck('total', 'month');
 
-        // Paiements par mois
-        $paymentsByMonth = Paiement::whereHas('vente', fn ($q) => $q->where('statut', 'valide'))
+        $paymentsByMonth = Paiement::withoutGlobalScope('entreprise')
+            ->whereIn('paiements.entreprise_id', $targetEntrepriseIds)
+            ->where('type_operation', 'encaissement')
+            ->whereHas('vente', fn ($q) => $q->withoutGlobalScope('entreprise')->where('statut', 'valide'))
             ->selectRaw("$dateExprPaiement as month, SUM(montant) as total")
-            ->where('created_at', '>=', $startMonthLimit)
+            ->where('date_paiement', '>=', $startMonthLimit)
             ->groupBy('month')
             ->pluck('total', 'month');
 
-        // Dépenses par mois
-        $depensesByMonth = Depense::selectRaw("$dateExprDepense as month, SUM(montant) as total")
+        $depensesByMonth = Depense::withoutGlobalScope('entreprise')
+            ->whereIn('entreprise_id', $targetEntrepriseIds)
+            ->where('statut', 'validee')
+            ->selectRaw("$dateExprDepense as month, SUM(montant) as total")
             ->where('date_depense', '>=', $startMonthLimit)
             ->groupBy('month')
             ->pluck('total', 'month');
@@ -260,14 +285,25 @@ class DashboardController extends Controller
         $dataBenefice = $months->map(fn ($m) => (float) (($paymentsByMonth[$m] ?? 0) - ($depensesByMonth[$m] ?? 0)))->values();
         $dataReste = $months->map(fn ($m) => max(0, (float) (($salesByMonth[$m] ?? 0) - ($paymentsByMonth[$m] ?? 0))))->values();
 
-        // Variables de compatibilité
-        $ca_journalier = $encaissePeriode;
-        $chiffreAffaireMoisEnCours = $encaissePeriode;
-        $chiffreAffaires = $encaissePeriode;
+        // Variables de compatibilité (en respectant RM-047 : Chiffre d'affaires = ventes nettes, jamais encaissements)
+        $ca_journalier = $caPeriode;
+        $chiffreAffaireMoisEnCours = $caPeriode;
+        $chiffreAffaires = $caPeriode;
         $chiffreAffairesGlobaux = $caPeriode;
         $totalVentesNonPayes = $resteAPayerPeriode;
         $depensesMois = $depensesPeriode;
         $beneficeNetMois = $beneficeNetPeriode;
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'periode'      => $periode,
+                'date_debut'   => $dateDebut,
+                'date_fin'     => $dateFin,
+                'is_consolide' => $isConsolide,
+                'entreprises'  => $targetEntrepriseIds,
+                'indicateurs'  => $indicateursFinanciers,
+            ]);
+        }
 
         return view('dashboards.admin', compact(
             'periode',
@@ -275,11 +311,18 @@ class DashboardController extends Controller
             'periodeTitle',
             'dateDebut',
             'dateFin',
+            'isConsolide',
+            'indicateursFinanciers',
             'caPeriode',
             'encaissePeriode',
             'resteAPayerPeriode',
             'depensesPeriode',
+            'margeBrutePeriode',
+            'fluxTresoreriePeriode',
             'beneficeNetPeriode',
+            'dettesFournisseursPeriode',
+            'achatsPeriode',
+            'paiementsFournisseursPeriode',
             'nbVentesPeriode',
             'panierMoyenPeriode',
             'ca_journalier',
@@ -303,9 +346,6 @@ class DashboardController extends Controller
         ));
     }
 
-    /**
-     * Données du tableau de bord Vendeur / Commercial
-     */
     private function vendeurDashboard($user, string $driver, Request $request)
     {
         $userId = $user->id;
@@ -316,23 +356,22 @@ class DashboardController extends Controller
         $periodeLabel = $periodData['periodeLabel'];
         $periodeTitle = $periodData['periodeTitle'];
 
+        $currentId = EntrepriseContext::currentId($user);
+        $targetEntrepriseIds = $currentId ? [$currentId] : $user->accessibleEntrepriseIds();
+
+        $indicateursFinanciers = FinanceService::calculateIndicators($targetEntrepriseIds, $dateDebut, $dateFin, $userId);
+
+        $caPeriode = $indicateursFinanciers['chiffre_affaires'];
+        $encaissePeriode = $indicateursFinanciers['encaissements'];
+        $resteAPayerPeriode = $indicateursFinanciers['creances_clients'];
+        $nbVentesPeriode = $indicateursFinanciers['nb_ventes'];
+        $panierMoyenPeriode = $indicateursFinanciers['panier_moyen'];
+        $tauxRecouvrement = $caPeriode > 0 ? round(($encaissePeriode / $caPeriode) * 100, 1) : 0;
+
         $ventes = Vente::where('user_id', $userId)
             ->orderByDesc('date_vente')
             ->take(10)
             ->get();
-
-        // ── Indicateurs filtrés par la période sélectionnée ──
-        $ventesPeriodeQuery = DB::table('ventes')
-            ->where('statut', 'valide')
-            ->where('user_id', $userId);
-        $this->applyDateFilter($ventesPeriodeQuery, 'date_vente', $periode, $dateDebut, $dateFin);
-
-        $caPeriode = (float) (clone $ventesPeriodeQuery)->sum('montant_total');
-        $encaissePeriode = (float) (clone $ventesPeriodeQuery)->sum('montant_paye');
-        $resteAPayerPeriode = (float) (clone $ventesPeriodeQuery)->sum('reste_a_payer');
-        $nbVentesPeriode = (int) (clone $ventesPeriodeQuery)->count();
-        $panierMoyenPeriode = $nbVentesPeriode > 0 ? round($caPeriode / $nbVentesPeriode) : 0;
-        $tauxRecouvrement = $caPeriode > 0 ? round(($encaissePeriode / $caPeriode) * 100, 1) : 0;
 
         $derniersClients = Vente::with('client')
             ->where('user_id', $userId)
@@ -342,17 +381,18 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        $produitsStockFaible = Produit::select('produits.*')
-            ->join('mouvement_stocks', 'produits.id', '=', 'mouvement_stocks.produit_id')
+        $produitsStockFaible = Produit::withoutGlobalScope('entreprise')
+            ->select('produits.*')
+            ->leftJoin('mouvement_stocks', 'produits.id', '=', 'mouvement_stocks.produit_id')
+            ->whereIn('produits.entreprise_id', $targetEntrepriseIds)
             ->selectRaw('
-                SUM(CASE WHEN type_mouvement = \'entree\' THEN quantite ELSE 0 END) -
-                SUM(CASE WHEN type_mouvement = \'sortie\' THEN quantite ELSE 0 END) as stock_actuel
+                COALESCE(SUM(CASE WHEN mouvement_stocks.type_mouvement = \'entree\' THEN mouvement_stocks.quantite ELSE 0 END), 0) -
+                COALESCE(SUM(CASE WHEN mouvement_stocks.type_mouvement = \'sortie\' THEN mouvement_stocks.quantite ELSE 0 END), 0) as stock_actuel
             ')
-            ->groupBy('produits.id', 'produits.nom', 'produits.prix', 'produits.seuil_alerte', 'produits.alerte_envoyee', 'produits.created_at', 'produits.updated_at')
-            ->havingRaw('(SUM(CASE WHEN type_mouvement = \'entree\' THEN quantite ELSE 0 END) - SUM(CASE WHEN type_mouvement = \'sortie\' THEN quantite ELSE 0 END)) <= seuil_alerte')
+            ->groupBy('produits.id', 'produits.entreprise_id', 'produits.categorie_id', 'produits.nom', 'produits.reference', 'produits.prix_achat', 'produits.prix', 'produits.seuil_alerte', 'produits.alerte_envoyee', 'produits.last_alerted_at', 'produits.created_at', 'produits.updated_at')
+            ->havingRaw('(COALESCE(SUM(CASE WHEN mouvement_stocks.type_mouvement = \'entree\' THEN mouvement_stocks.quantite ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN mouvement_stocks.type_mouvement = \'sortie\' THEN mouvement_stocks.quantite ELSE 0 END), 0)) <= produits.seuil_alerte')
             ->get();
 
-        // Graphiques
         $months = collect(range(0, 11))
             ->map(fn ($i) => now()->subMonths($i)->format('Y-m'))
             ->reverse()
@@ -382,6 +422,7 @@ class DashboardController extends Controller
             ->pluck('total', 'month');
 
         $payments = Paiement::query()
+            ->where('type_operation', 'encaissement')
             ->whereHas('vente', fn ($q) => $q->where('user_id', $userId)->where('statut', 'valide'))
             ->selectRaw("$dateExprPaiement as month, SUM(montant) as total")
             ->where('date_paiement', '>=', $startDate)
@@ -392,13 +433,12 @@ class DashboardController extends Controller
         $data1 = $months->map(fn ($m) => (float) ($payments[$m] ?? 0))->values();
         $dataReste = $months->map(fn ($m) => max(0, (float) (($sales[$m] ?? 0) - ($payments[$m] ?? 0))))->values();
 
-        // Variables de compatibilité
         $chiffreAffairesvendeurs = $encaissePeriode;
         $chiffreAffairesvendeursglobal = $caPeriode;
         $chiffreAffairesvendeursimpaye = $resteAPayerPeriode;
-        $ca_journalier = $encaissePeriode;
+        $ca_journalier = $caPeriode;
         $ca_journalierNonPaye = $resteAPayerPeriode;
-        $chiffreAffaireMoisEnCours = $encaissePeriode;
+        $chiffreAffaireMoisEnCours = $caPeriode;
         $chiffreAffaireMoisEnCourNonPaye = $resteAPayerPeriode;
 
         return view('dashboards.vendeur', compact(
@@ -430,4 +470,3 @@ class DashboardController extends Controller
         ));
     }
 }
-

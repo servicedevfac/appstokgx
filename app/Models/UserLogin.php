@@ -1,14 +1,17 @@
 <?php
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\BelongsToEntreprise;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class UserLogin extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToEntreprise;
 
     protected $fillable = [
+        'entreprise_id',
         'user_id',
         'ip_address',
         'user_agent',

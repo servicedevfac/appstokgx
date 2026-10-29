@@ -80,13 +80,20 @@
                                 <option value="">-- Choisir un rôle --</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->name }}" {{ old('role') == $role->name ? 'selected' : '' }}>
-                                        {{ ucfirst($role->name) }}
+                                        {{ \App\Models\User::ROLE_LABELS[$role->name] ?? ucfirst($role->name) }}
                                     </option>
                                 @endforeach
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Entreprise de rattachement (Unique)</label>
+                            @php $singleEnt = ($entreprises ?? collect())->first(); @endphp
+                            <input type="hidden" name="entreprise_id" value="{{ $singleEnt?->id ?? $currentEntrepriseId }}">
+                            <input type="text" class="form-control bg-light" value="{{ $singleEnt ? ($singleEnt->nom . ' (' . $singleEnt->code . ')') : 'Entreprise active' }}" readonly>
                         </div>
                     </div>
 

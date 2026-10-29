@@ -21,29 +21,26 @@ class DepensePermissionsSeeder extends Seeder
         ];
 
         foreach ($permissions as $perm) {
-            Permission::firstOrCreate(['name' => $perm]);
+            Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
         }
 
-        // Seuls les administrateurs ont le droit de modifier et supprimer
-        $adminRoles = ['super admin', 'Administrateur'];
-        foreach ($adminRoles as $roleName) {
+        // Propriétaire et Administrateur d'entreprise ont tous les droits sur les dépenses de leur entreprise
+        foreach (['Propriétaire', 'Administrateur'] as $roleName) {
             $role = Role::where('name', $roleName)->first();
             if ($role) {
                 $role->givePermissionTo($permissions);
             }
         }
 
-        // Le Gestionnaire peut seulement voir, enregistrer et exporter les dépenses (PAS modifier, PAS supprimer)
+        // Le Gestionnaire peut consulter, enregistrer et exporter les dépenses (sans modifier ni supprimer)
         $gestionnaire = Role::where('name', 'Gestionnaire')->first();
         if ($gestionnaire) {
-            // Révoquer modification et suppression si attribuées auparavant
             $gestionnaire->revokePermissionTo(['edit depense', 'delete depense']);
             $gestionnaire->givePermissionTo(['view depense', 'create depense', 'exporter depense']);
         }
 
-        // Rôles commerciaux
-        $commercialRoles = ['Commercial', 'Commerciale'];
-        foreach ($commercialRoles as $cRole) {
+        // Vendeur / Caissier
+        foreach (['Commercial', 'Commerciale'] as $cRole) {
             $role = Role::where('name', $cRole)->first();
             if ($role) {
                 $role->revokePermissionTo(['edit depense', 'delete depense']);

@@ -2,77 +2,107 @@
 
 namespace App\Console\Commands;
 
-
-use Illuminate\Console\Command;
+use App\Models\Achat;
+use App\Models\Entreprise;
 use App\Models\Produit;
-use App\Models\User;
+use App\Models\Vente;
 use App\Notifications\StockAlerte;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Notification;
 
 class VerifierStock extends Command
 {
     protected $signature = 'stock:alert';
-    protected $description = 'Envoie une alerte si le stock des produits est inférieur au seuil';
+    protected $description = 'Vérifie par entreprise les stocks faibles/ruptures ainsi que les échéances de créances et dettes sans doublon abusif';
 
     public function handle()
     {
-        $this->info('Vérification des stocks...');
+        $this->info('Vérification des stocks et échéances par entreprise...');
 
-        // Récupérer tous les admins ou utilisateurs à notifier
-        $admins = User::role('Administrateur')->get(); // ou User::where('role', 'admin')->get();
+        $entreprises = Entreprise::where('actif', true)->get();
 
-        // Récupérer tous les produits
-        $produits = Produit::all();
+        foreach ($entreprises as $entreprise) {
+            $produits = Produit::withoutGlobalScopes()
+                ->where('entreprise_id', $entreprise->id)
+                ->get();
 
-        // Collecter tous les produits avec un stock inférieur au seuil d'alerte
-        $produitsEnAlerte = [];
-        $produitsIds = [];
+            $produitsEnAlerte = [];
+            $produitsIds = [];
 
-        foreach ($produits as $produit) {
-            if ($produit->stock_actuel <= $produit->seuil_alerte) {
-                // Créer un tableau avec les données du produit
-                $produitData = $produit->toArray();
-                // Ajouter explicitement les clés nécessaires pour la notification
-                $produitData['stock'] = $produit->stock_actuel;
-                $produitData['seuil'] = $produit->seuil_alerte;
-                $produitData['url'] = url('/produits/' . $produit->id);
-                $produitsEnAlerte[] = $produitData;
-                $produitsIds[] = $produit->id;
+            foreach ($produits as $produit) {
+                $estEnAlerte = $produit->stock <= $produit->seuil_alerte;
 
-                echo "Produit en alerte : {$produit->nom}\n";
-            } else {
-                echo "Stock OK pour : {$produit->nom}\n";
+                if ($estEnAlerte) {
+                    // Anti-spam : ne pas renvoyer d'alerte si déjà envoyée il y a moins de 24h
+                    $dejaAlerteRecemment = $produit->alerte_envoyee
+                        && $produit->last_alerted_at
+                        && $produit->last_alerted_at->gt(now()->subHours(24));
+
+                    if (!$dejaAlerteRecemment) {
+                        $produitData = $produit->toArray();
+                        $produitData['stock'] = $produit->stock;
+                        $produitData['seuil'] = $produit->seuil_alerte;
+                        $produitData['statut_stock'] = $produit->stock <= 0 ? 'RUPTURE' : 'STOCK FAIBLE';
+                        $produitData['url'] = url('/produits');
+                        $produitsEnAlerte[] = $produitData;
+                        $produitsIds[] = $produit->id;
+                    }
+                } elseif ($produit->alerte_envoyee) {
+                    // Réinitialiser le flag si le stock a été réapprovisionné au-dessus du seuil
+                    Produit::withoutGlobalScopes()->where('id', $produit->id)->update([
+                        'alerte_envoyee' => false,
+                    ]);
+                }
+            }
+
+            // Vérification des créances clients à échéance dépassée
+            $creancesEchues = Vente::withoutGlobalScopes()
+                ->where('entreprise_id', $entreprise->id)
+                ->where('statut', '!=', 'annulee')
+                ->where('reste_a_payer', '>', 0)
+                ->whereNotNull('date_echeance')
+                ->whereDate('date_echeance', '<=', now()->toDateString())
+                ->count();
+
+            // Vérification des dettes fournisseurs à échéance dépassée
+            $dettesEchues = Achat::withoutGlobalScopes()
+                ->where('entreprise_id', $entreprise->id)
+                ->where('statut_reception', '!=', 'annule')
+                ->where('reste_a_payer', '>', 0)
+                ->whereNotNull('date_echeance')
+                ->whereDate('date_echeance', '<=', now()->toDateString())
+                ->count();
+
+            if (count($produitsEnAlerte) > 0) {
+                $destinataires = $entreprise->utilisateurs()
+                    ->where('users.actif', true)
+                    ->wherePivotIn('role', ['Propriétaire', 'Administrateur', 'Gestionnaire'])
+                    ->get();
+
+                if ($destinataires->isNotEmpty()) {
+                    try {
+                        Notification::sendNow($destinataires, new StockAlerte($produitsEnAlerte));
+                    } catch (\Exception $e) {
+                        $this->warn("Alerte enregistrée localement (email non envoyé) pour {$entreprise->nom}: {$e->getMessage()}");
+                    }
+                }
+
+                Produit::withoutGlobalScopes()
+                    ->whereIn('id', $produitsIds)
+                    ->update([
+                        'alerte_envoyee' => true,
+                        'last_alerted_at' => now(),
+                    ]);
+
+                $this->info("[{$entreprise->nom}] Alerte traitée pour " . count($produitsEnAlerte) . " produit(s).");
+            }
+
+            if ($creancesEchues > 0 || $dettesEchues > 0) {
+                $this->info("[{$entreprise->nom}] Échéances détectées : {$creancesEchues} créance(s) client, {$dettesEchues} dette(s) fournisseur.");
             }
         }
-
-        // Envoyer une seule notification si des produits sont en alerte
-        if (count($produitsEnAlerte) > 0) {
-            try {
-                Notification::sendNow($admins, new StockAlerte($produitsEnAlerte));
-
-                // Mettre à jour le statut d'alerte pour tous les produits concernés
-                Produit::whereIn('id', $produitsIds)->update([
-                    'alerte_envoyee' => true,
-                    'last_alerted_at' => now()
-                ]);
-
-                $this->info('Alerte envoyée pour ' . count($produitsEnAlerte) . ' produit(s).');
-            } catch (\Exception $e) {
-                $this->error("Erreur lors de l'envoi de l'alerte: {$e->getMessage()}");
-                $this->info("Les alertes seront enregistrées sans envoi d'email.");
-
-                // Mettre à jour le statut d'alerte même en cas d'erreur
-                Produit::whereIn('id', $produitsIds)->update([
-                    'alerte_envoyee' => true,
-                    'last_alerted_at' => now()
-                ]);
-            }
-        } else {
-            $this->info('Aucun produit n\'a atteint le seuil d\'alerte.');
-        }
-
-
 
         $this->info('Vérification terminée.');
+        return self::SUCCESS;
     }
 }

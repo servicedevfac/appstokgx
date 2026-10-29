@@ -6,16 +6,13 @@ use App\Models\Horaire;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class VerifierHoraireVente
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-   public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         $maintenant = Carbon::now();
         $jour = strtolower($maintenant->locale('fr')->isoFormat('dddd')); // ex: 'lundi'
@@ -23,15 +20,19 @@ class VerifierHoraireVente
 
         $horaire = Horaire::where('jour_semaine', $jour)->first();
 
-        if (!$horaire) {
-            return redirect()->back()->with('error', "Les horaires pour $jour ne sont pas configurés.");
+        // Si aucun horaire n'est configuré pour cette entreprise, ou si les heures sont vides, autoriser par défaut
+        if (!$horaire || empty($horaire->heure_ouverture) || empty($horaire->heure_fermeture)) {
+            return $next($request);
         }
 
-        if ($heureActuelle < $horaire->heure_ouverture || $heureActuelle > $horaire->heure_fermeture) {
+        $ouverture = substr($horaire->heure_ouverture, 0, 5);
+        $fermeture = substr($horaire->heure_fermeture, 0, 5);
+
+        if ($heureActuelle < $ouverture || $heureActuelle > $fermeture) {
             return response()->view('errors.horaires', [
                 'ouverture' => $horaire->heure_ouverture,
                 'fermeture' => $horaire->heure_fermeture,
-                 'jour' => ucfirst($jour),
+                'jour' => ucfirst($jour),
             ], 403);
         }
 

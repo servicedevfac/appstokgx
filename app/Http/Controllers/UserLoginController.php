@@ -25,7 +25,7 @@ class UserLoginController extends Controller
         $this->checkAdminPermission();
 
         $logins = UserLogin::with('user')
-            ->orderByDesc('created_at')
+            ->orderByDesc('logged_in_at')
             ->paginate(15);
 
         return view('user-logins.index', compact('logins'));

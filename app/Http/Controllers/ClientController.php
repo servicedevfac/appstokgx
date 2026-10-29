@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Services\EntrepriseContext;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,11 +12,26 @@ use Illuminate\Support\Str;
 
 class ClientController extends Controller
 {
-    /**
-     * Liste des clients avec filtre de recherche
-     */
+    private function checkPermission(string $action = 'view'): void
+    {
+        $user = Auth::user();
+        if (! $user->hasAnyRole(['Propriétaire', 'Administrateur', 'super admin']) && ! $user->can("{$action} client")) {
+            abort(403, 'Accès refusé. Vous n\'avez pas la permission d\'effectuer cette action sur les clients.');
+        }
+    }
+
+    private function ensureSameEntreprise(Client $client): void
+    {
+        $user = Auth::user();
+        $currentId = EntrepriseContext::currentId($user);
+        if (! $user->canAccessEntreprise((int) $client->entreprise_id) || ($currentId && (int) $client->entreprise_id !== (int) $currentId)) {
+            abort(403, 'Accès interdit au client d\'une autre entreprise.');
+        }
+    }
+
     public function index(Request $request)
     {
+        $this->checkPermission('view');
         $query = Client::query();
 
         if ($request->filled('search')) {
@@ -34,35 +50,37 @@ class ClientController extends Controller
         return view('admin.clients.index', compact('clients'));
     }
 
-    /**
-     * Formulaire de création d'un client
-     */
     public function create()
     {
+        $this->checkPermission('create');
         return view('admin.clients.create');
     }
 
-    /**
-     * Enregistrement d'un nouveau client avec génération atomique du code
-     */
     public function store(Request $request)
     {
+        $this->checkPermission('create');
+
         $validated = $request->validate([
             'nom'       => 'required|string|max:255',
             'prenom'    => 'nullable|string|max:255',
             'telephone' => 'nullable|string|max:20',
+            'email'     => 'nullable|email|max:255',
             'adresse'   => 'nullable|string|max:255',
         ], [
-            'nom.required' => 'Le nom du client est obligatoire.',
-            'nom.max'      => 'Le nom ne peut pas dépasser 255 caractères.',
-            'telephone.max'=> 'Le numéro de téléphone ne peut pas dépasser 20 caractères.',
+            'nom.required'  => 'Le nom du client est obligatoire.',
+            'nom.max'       => 'Le nom ne peut pas dépasser 255 caractères.',
+            'telephone.max' => 'Le numéro de téléphone ne peut pas dépasser 20 caractères.',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $entrepriseId = EntrepriseContext::currentId();
+
+        DB::transaction(function () use ($validated, $entrepriseId) {
             $now = now();
             $prefix = 'CLT-' . $now->format('my') . '-';
 
-            $lastClient = Client::where('code_client', 'like', $prefix . '%')
+            $lastClient = Client::withoutGlobalScope('entreprise')
+                ->where('entreprise_id', $entrepriseId)
+                ->where('code_client', 'like', $prefix . '%')
                 ->lockForUpdate()
                 ->orderByDesc('code_client')
                 ->first();
@@ -73,82 +91,78 @@ class ClientController extends Controller
                 $nextNumber = $lastSuffix + 1;
             }
 
-            $codeClient = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+            $codeClient = $prefix . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
 
             Client::create([
-                'code_client' => $codeClient,
-                'nom'         => $validated['nom'],
-                'prenom'      => $validated['prenom'],
-                'telephone'   => $validated['telephone'] ?? null,
-                'adresse'     => $validated['adresse'] ?? null,
+                'entreprise_id' => $entrepriseId,
+                'code_client'   => $codeClient,
+                'nom'           => $validated['nom'],
+                'prenom'        => $validated['prenom'] ?? null,
+                'telephone'     => $validated['telephone'] ?? null,
+                'email'         => $validated['email'] ?? null,
+                'adresse'       => $validated['adresse'] ?? null,
             ]);
         });
 
         return redirect()->route('clients.index')->with('success', 'Client créé avec succès.');
     }
 
-    /**
-     * Affichage de la fiche client et de ses ventes
-     */
-    public function show(Client $client)
+    public function show($id)
     {
+        $this->checkPermission('view');
+        $client = Client::withoutGlobalScope('entreprise')->findOrFail($id);
+        $this->ensureSameEntreprise($client);
+
         $ventes = $client->ventes()->with('user')->orderByDesc('date_vente')->paginate(10);
 
         return view('admin.clients.show', compact('client', 'ventes'));
     }
 
-    /**
-     * Formulaire de modification d'un client (réservé aux admins)
-     */
-    public function edit(Client $client)
+    public function edit($id)
     {
-        if (!Auth::user()->hasAnyRole(['Administrateur', 'super admin']) && !Auth::user()->can('edit client')) {
-            abort(403, 'Accès refusé. Seul un administrateur est autorisé à modifier un client.');
-        }
+        $this->checkPermission('edit');
+        $client = Client::withoutGlobalScope('entreprise')->findOrFail($id);
+        $this->ensureSameEntreprise($client);
 
         return view('admin.clients.edit', compact('client'));
     }
 
-    /**
-     * Mise à jour des informations client
-     */
-    public function update(Request $request, Client $client)
+    public function update(Request $request, $id)
     {
-        if (!Auth::user()->hasAnyRole(['Administrateur', 'super admin']) && !Auth::user()->can('edit client')) {
-            abort(403, 'Accès refusé. Seul un administrateur est autorisé à modifier un client.');
-        }
+        $this->checkPermission('edit');
+        $client = Client::withoutGlobalScope('entreprise')->findOrFail($id);
+        $this->ensureSameEntreprise($client);
 
         $validated = $request->validate([
             'nom'       => 'required|string|max:255',
             'prenom'    => 'nullable|string|max:255',
             'telephone' => 'nullable|string|max:20',
+            'email'     => 'nullable|email|max:255',
             'adresse'   => 'nullable|string|max:255',
         ], [
-            'nom.required' => 'Le nom du client est obligatoire.',
-            'nom.max'      => 'Le nom ne peut pas dépasser 255 caractères.',
-            'telephone.max'=> 'Le numéro de téléphone ne peut pas dépasser 20 caractères.',
+            'nom.required'  => 'Le nom du client est obligatoire.',
+            'nom.max'       => 'Le nom ne peut pas dépasser 255 caractères.',
+            'telephone.max' => 'Le numéro de téléphone ne peut pas dépasser 20 caractères.',
         ]);
 
         $client->update([
             'nom'       => $validated['nom'],
-            'prenom'    => $validated['prenom'],
+            'prenom'    => $validated['prenom'] ?? null,
             'telephone' => $validated['telephone'] ?? null,
+            'email'     => $validated['email'] ?? $client->email,
             'adresse'   => $validated['adresse'] ?? null,
         ]);
 
         return redirect()->route('clients.index')->with('success', 'Client mis à jour avec succès.');
     }
 
-    /**
-     * Suppression d'un client avec vérification d'intégrité
-     */
-    public function destroy(Client $client)
+    public function destroy($id)
     {
-        if (!Auth::user()->hasAnyRole(['Administrateur', 'super admin']) && !Auth::user()->can('delete client')) {
-            abort(403, 'Accès refusé. Seul un administrateur est autorisé à supprimer un client.');
-        }
+        $this->checkPermission('delete');
+        $client = Client::withoutGlobalScope('entreprise')->findOrFail($id);
+        $this->ensureSameEntreprise($client);
 
-        if ($client->ventes()->count() > 0) {
+        if ($client->ventes()->withoutGlobalScope('entreprise')->count() > 0) {
             return redirect()->route('clients.index')->with('error', 'Impossible de supprimer ce client : des ventes lui sont associées.');
         }
 
@@ -157,11 +171,9 @@ class ClientController extends Controller
         return redirect()->route('clients.index')->with('success', 'Client supprimé avec succès.');
     }
 
-    /**
-     * Recherche AJAX des clients pour autocomplétion
-     */
     public function search(Request $request)
     {
+        $this->checkPermission('view');
         $search = trim($request->get('q', ''));
 
         if (empty($search)) {
@@ -180,11 +192,9 @@ class ClientController extends Controller
         return response()->json($clients);
     }
 
-    /**
-     * Export PDF de la liste des clients
-     */
     public function exportPdfListClients(Request $request)
     {
+        $this->checkPermission('exporter');
         $query = Client::query();
 
         if ($request->filled('q')) {

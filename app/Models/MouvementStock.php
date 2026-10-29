@@ -2,23 +2,26 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToEntreprise;
 use Illuminate\Database\Eloquent\Model;
 
 class MouvementStock extends Model
 {
-     protected $table = 'mouvement_stocks';
+    use BelongsToEntreprise;
 
-    // Supprime ceci si tu l’avais défini :
-    // protected $primaryKey = 'id_mouvement_stock';
+    protected $table = 'mouvement_stocks';
 
     protected $fillable = [
+        'entreprise_id',
         'produit_id',
         'user_id',
         'vente_id',
+        'achat_id',
         'quantite',
         'type_mouvement',
         'date_mouvement',
         'motif',
+        'reference_externe',
     ];
 
     public function produit()
@@ -30,14 +33,19 @@ class MouvementStock extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function vente()
+    {
+        return $this->belongsTo(Vente::class);
+    }
+
+    public function achat()
+    {
+        return $this->belongsTo(Achat::class);
+    }
+
+    public function getTypeAttribute(): ?string
+    {
+        return $this->type_mouvement;
+    }
 }
-
-
-
-
-
-
-
-
-
-

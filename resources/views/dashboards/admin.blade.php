@@ -201,7 +201,67 @@
                 </div>
             </div>
         </div>
+
+        @if(isset($indicateursFinanciers))
+        {{-- Dettes Fournisseurs --}}
+        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-dettes-fournisseurs">
+            <div class="card modern-stat stat-red h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-label">Dettes Fournisseurs</div>
+                            <div class="stat-value">{{ number_format($indicateursFinanciers['dettes_fournisseurs'] ?? 0, 0, ',', ' ') }} <small>XOF</small></div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Flux de Trésorerie Net --}}
+        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-flux-tresorerie">
+            <div class="card modern-stat {{ ($indicateursFinanciers['flux_tresorerie_net'] ?? 0) >= 0 ? 'stat-teal' : 'stat-red' }} h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-label">Flux Trésorerie Net</div>
+                            <div class="stat-value">{{ number_format($indicateursFinanciers['flux_tresorerie_net'] ?? 0, 0, ',', ' ') }} <small>XOF</small></div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-cash-register"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Avances sur salaire en cours --}}
+        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-avances-salaires">
+            <div class="card modern-stat stat-gold h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="stat-label">Encours Avances Salaires</div>
+                            <div class="stat-value">{{ number_format($indicateursFinanciers['encours_avances_salaires'] ?? 0, 0, ',', ' ') }} <small>XOF</small></div>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
+
+    @if(isset($indicateursFinanciers['avertissement_comptable']))
+        <div class="alert alert-light border mt-3 mb-0 py-2 small text-muted">
+            <i class="fas fa-info-circle text-primary me-1"></i>
+            {{ $indicateursFinanciers['avertissement_comptable'] }}
+        </div>
+    @endif
 
     {{-- Alerte aucun indicateur sélectionné --}}
     <div id="no-indicators-alert" class="alert alert-info d-none mt-3 text-center py-3 rounded-3 shadow-sm border-0">
@@ -435,59 +495,81 @@
     const ctx = document.getElementById('caLineChart').getContext('2d');
 
     const caLineChart = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
             labels: labels,
             datasets: [
                 {
-                    type: 'bar',
+                    type: 'line',
                     label: "Chiffre d'affaires",
                     data: data,
-                    backgroundColor: 'rgba(26, 35, 126, 0.85)',
-                    borderColor: 'rgba(26, 35, 126, 1)',
-                    borderRadius: 6,
-                    borderWidth: 0,
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                    borderWidth: 2.5,
+                    tension: 0.35,
+                    fill: false,
+                    pointRadius: 3.5,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(37, 99, 235, 1)',
                     order: 2,
                 },
                 {
-                    type: 'bar',
+                    type: 'line',
                     label: 'Montant encaissé',
                     data: data1,
-                    backgroundColor: 'rgba(22, 163, 74, 0.85)',
                     borderColor: 'rgba(22, 163, 74, 1)',
-                    borderRadius: 6,
-                    borderWidth: 0,
-                    order: 2,
+                    backgroundColor: 'rgba(22, 163, 74, 0.08)',
+                    borderWidth: 2.5,
+                    tension: 0.35,
+                    fill: false,
+                    pointRadius: 3.5,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(22, 163, 74, 1)',
+                    order: 3,
                 },
                 {
-                    type: 'bar',
+                    type: 'line',
                     label: 'Dépenses',
                     data: depenses,
-                    backgroundColor:'rgba(245, 158, 11, 0.85)' ,
-                    borderColor: 'rgba(239, 68, 68, 1)',
-                    borderRadius: 6,
-                    borderWidth: 0,
-                    order: 2,
+                    borderColor: 'rgba(245, 158, 11, 1)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                    borderWidth: 2,
+                    borderDash: [5, 4],
+                    tension: 0.35,
+                    fill: false,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+                    order: 4,
                 },
                 {
-                    type: 'bar',
+                    type: 'line',
                     label: 'Reste à payer',
                     data: reste,
-                    backgroundColor: 'rgba(239, 68, 68, 0.85)',
-                    borderColor: 'rgba(245, 158, 11, 1)',
-                    borderRadius: 6,
-                    borderWidth: 0,
-                    order: 2,
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                    borderWidth: 2,
+                    borderDash: [4, 4],
+                    tension: 0.35,
+                    fill: false,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                    order: 5,
                 },
                 {
-                    type: 'bar',
+                    type: 'line',
                     label: 'Bénéfice Net',
                     data: benefice,
-                    backgroundColor: 'rgba(14, 165, 233, 0.85)',
                     borderColor: 'rgba(14, 165, 233, 1)',
-                    borderRadius: 6,
-                    borderWidth: 0,
-                    order:1,
+                    backgroundColor: 'rgba(14, 165, 233, 0.12)',
+                    borderWidth: 2.5,
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(14, 165, 233, 1)',
+                    order: 1,
                 }
             ],
         },
@@ -500,7 +582,7 @@
                     position: 'top',
                     labels: {
                         usePointStyle: true,
-                        pointStyle: 'rectRounded',
+                        pointStyle: 'circle',
                         padding: 20,
                         font: { family: "'Inter', sans-serif", size: 12, weight: '500' }
                     }
@@ -520,7 +602,7 @@
                     }
                 }
             },
-            interaction: { mode: 'nearest', intersect: false },
+            interaction: { mode: 'index', intersect: false },
             scales: {
                 x: {
                     display: true,

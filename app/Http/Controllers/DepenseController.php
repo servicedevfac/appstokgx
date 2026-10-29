@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Depense;
+use App\Services\AuditService;
+use App\Services\EntrepriseContext;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -15,14 +17,28 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DepenseController extends Controller
 {
-    /**
-     * Liste des dépenses avec filtres et KPIs
-     */
+    private function checkPermission(string $action = 'view'): void
+    {
+        $user = Auth::user();
+        if (! $user->hasAnyRole(['Propriétaire', 'Administrateur', 'super admin']) && ! $user->can("{$action} depense")) {
+            abort(403, 'Accès refusé. Vous n\'avez pas la permission d\'effectuer cette opération sur les dépenses.');
+        }
+    }
+
+    private function ensureSameEntreprise(Depense $depense): void
+    {
+        $user = Auth::user();
+        $currentId = EntrepriseContext::currentId($user);
+        if (! $user->canAccessEntreprise((int) $depense->entreprise_id) || ($currentId && (int) $depense->entreprise_id !== (int) $currentId)) {
+            abort(403, 'Accès interdit à la dépense d\'une autre entreprise.');
+        }
+    }
+
     public function index(Request $request)
     {
+        $this->checkPermission('view');
         $query = Depense::with('user');
 
-        // 1. Filtre par recherche textuelle
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -32,17 +48,18 @@ class DepenseController extends Controller
             });
         }
 
-        // 2. Filtre par catégorie
         if ($request->filled('categorie')) {
             $query->where('categorie', $request->input('categorie'));
         }
 
-        // 3. Filtre par mode de paiement
         if ($request->filled('mode_paiement')) {
             $query->where('mode_paiement', $request->input('mode_paiement'));
         }
 
-        // 4. Filtre par période
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->input('statut'));
+        }
+
         $periode = $request->input('periode', 'mois');
         if ($periode === 'aujourdhui') {
             $query->whereDate('date_depense', Carbon::today());
@@ -62,15 +79,18 @@ class DepenseController extends Controller
             }
         }
 
-        // Calcul des totaux KPIs
-        $totalFiltre = (clone $query)->sum('montant');
-        $totalMois = Depense::whereYear('date_depense', Carbon::now()->year)
-                            ->whereMonth('date_depense', Carbon::now()->month)
-                            ->sum('montant');
-        $totalJour = Depense::whereDate('date_depense', Carbon::today())->sum('montant');
+        // Ne comptabiliser dans les KPIs que les dépenses validées (Section 7.4)
+        $totalFiltre = (clone $query)->where('statut', 'validee')->sum('montant');
+        $totalMois = Depense::where('statut', 'validee')
+            ->whereYear('date_depense', Carbon::now()->year)
+            ->whereMonth('date_depense', Carbon::now()->month)
+            ->sum('montant');
+        $totalJour = Depense::where('statut', 'validee')
+            ->whereDate('date_depense', Carbon::today())
+            ->sum('montant');
 
-        // Répartition par catégorie sur la sélection filtrée
         $repartitionCategories = (clone $query)
+            ->where('statut', 'validee')
             ->selectRaw('categorie, SUM(montant) as total, COUNT(*) as count')
             ->groupBy('categorie')
             ->orderByDesc('total')
@@ -78,7 +98,6 @@ class DepenseController extends Controller
 
         $topCategorie = $repartitionCategories->first();
 
-        // Pagination
         $depenses = $query->orderBy('date_depense', 'desc')
                           ->orderBy('created_at', 'desc')
                           ->paginate(15)
@@ -100,45 +119,37 @@ class DepenseController extends Controller
         ));
     }
 
-    /**
-     * Formulaire d'ajout
-     */
     public function create()
     {
+        $this->checkPermission('create');
         $categories = Depense::categoriesList();
         $modesPaiement = Depense::modesPaiement();
 
         return view('admin.depenses.create', compact('categories', 'modesPaiement'));
     }
 
-    /**
-     * Enregistrement d'une dépense
-     */
     public function store(Request $request)
     {
+        $this->checkPermission('create');
+
         $request->validate([
-            'titre' => 'required|string|max:255',
-            'categorie' => 'required|string',
-            'montant' => 'required|numeric|min:1',
-            'date_depense' => 'required|date',
-            'mode_paiement' => 'required|string',
-            'beneficiaire' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'justificatif' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:5120', // Max 5MB
-        ], [
-            'titre.required'         => 'Le libellé de la dépense est obligatoire.',
-            'titre.max'              => 'Le libellé ne peut pas dépasser 255 caractères.',
-            'categorie.required'     => 'Veuillez sélectionner une catégorie.',
-            'montant.required'       => 'Le montant de la dépense est obligatoire.',
-            'montant.numeric'        => 'Le montant doit être une valeur numérique.',
-            'montant.min'            => 'Le montant doit être d\'au moins 1 FCFA.',
-            'date_depense.required'  => 'La date de la dépense est obligatoire.',
-            'date_depense.date'      => 'La date de la dépense n\'est pas valide.',
-            'mode_paiement.required' => 'Veuillez sélectionner un mode de paiement.',
-            'justificatif.file'      => 'Le justificatif doit être un fichier valide.',
-            'justificatif.mimes'     => 'Le justificatif doit être au format JPG, PNG, WEBP ou PDF.',
-            'justificatif.max'       => 'La taille du justificatif ne doit pas dépasser 5 Mo.',
+            'titre'            => 'required|string|max:255',
+            'categorie'        => 'required|string',
+            'montant'          => 'required|numeric|min:1',
+            'date_depense'     => 'required|date',
+            'mode_paiement'    => 'required|string',
+            'beneficiaire'     => 'nullable|string|max:255',
+            'description'      => 'nullable|string',
+            'statut'           => 'nullable|in:validee,en_attente,annulee',
+            'reference_unique' => 'nullable|string|max:100',
+            'justificatif'     => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:5120',
         ]);
+
+        if ($request->filled('reference_unique')) {
+            if (Depense::withoutGlobalScope('entreprise')->where('reference_unique', $request->reference_unique)->exists()) {
+                return back()->withInput()->with('error', 'Cette dépense a déjà été enregistrée (référence en doublon).');
+            }
+        }
 
         $data = $request->only([
             'titre',
@@ -150,13 +161,15 @@ class DepenseController extends Controller
             'description',
         ]);
 
+        $data['entreprise_id'] = EntrepriseContext::currentId();
         $data['user_id'] = Auth::id();
+        $data['statut'] = $request->input('statut', 'validee');
+        $data['reference_unique'] = $request->input('reference_unique');
 
-        // Traitement du justificatif uploadé
         if ($request->hasFile('justificatif')) {
             $file = $request->file('justificatif');
             $uploadDir = public_path('uploads/justificatifs_depenses');
-            if (!File::isDirectory($uploadDir)) {
+            if (! File::isDirectory($uploadDir)) {
                 File::makeDirectory($uploadDir, 0755, true, true);
             }
             $fileName = 'justificatif_' . time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
@@ -164,31 +177,37 @@ class DepenseController extends Controller
             $data['justificatif'] = 'uploads/justificatifs_depenses/' . $fileName;
         }
 
-        Depense::create($data);
+        $depense = Depense::create($data);
+
+        AuditService::log(
+            'depense.creation',
+            $depense,
+            $depense->id,
+            ['titre' => $depense->titre, 'montant' => $depense->montant, 'statut' => $depense->statut],
+            $depense->titre,
+            (int) $depense->entreprise_id
+        );
 
         return redirect()->route('depenses.index')
                          ->with('success', 'Dépense enregistrée avec succès.');
     }
 
-    /**
-     * Fiche d'une dépense
-     */
-    public function show(Depense $depense)
+    public function show($id)
     {
-        $depense->load('user');
+        $this->checkPermission('view');
+        $depense = Depense::withoutGlobalScope('entreprise')->with('user')->findOrFail($id);
+        $this->ensureSameEntreprise($depense);
+
         $categories = Depense::categories();
 
         return view('admin.depenses.show', compact('depense', 'categories'));
     }
 
-    /**
-     * Formulaire de modification
-     */
-    public function edit(Depense $depense)
+    public function edit($id)
     {
-        if (!Auth::user()->hasAnyRole(['Administrateur', 'super admin']) && !Auth::user()->can('edit depense')) {
-            abort(403, 'Accès refusé. Seul un administrateur est autorisé à modifier une dépense.');
-        }
+        $this->checkPermission('edit');
+        $depense = Depense::withoutGlobalScope('entreprise')->findOrFail($id);
+        $this->ensureSameEntreprise($depense);
 
         $categories = Depense::categoriesList();
         $modesPaiement = Depense::modesPaiement();
@@ -196,37 +215,22 @@ class DepenseController extends Controller
         return view('admin.depenses.edit', compact('depense', 'categories', 'modesPaiement'));
     }
 
-    /**
-     * Mise à jour d'une dépense
-     */
-    public function update(Request $request, Depense $depense)
+    public function update(Request $request, $id)
     {
-        if (!Auth::user()->hasAnyRole(['Administrateur', 'super admin']) && !Auth::user()->can('edit depense')) {
-            abort(403, 'Accès refusé. Seul un administrateur est autorisé à modifier une dépense.');
-        }
+        $this->checkPermission('edit');
+        $depense = Depense::withoutGlobalScope('entreprise')->findOrFail($id);
+        $this->ensureSameEntreprise($depense);
 
         $request->validate([
-            'titre' => 'required|string|max:255',
-            'categorie' => 'required|string',
-            'montant' => 'required|numeric|min:1',
-            'date_depense' => 'required|date',
+            'titre'         => 'required|string|max:255',
+            'categorie'     => 'required|string',
+            'montant'       => 'required|numeric|min:1',
+            'date_depense'  => 'required|date',
             'mode_paiement' => 'required|string',
-            'beneficiaire' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'justificatif' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:5120',
-        ], [
-            'titre.required'         => 'Le libellé de la dépense est obligatoire.',
-            'titre.max'              => 'Le libellé ne peut pas dépasser 255 caractères.',
-            'categorie.required'     => 'Veuillez sélectionner une catégorie.',
-            'montant.required'       => 'Le montant de la dépense est obligatoire.',
-            'montant.numeric'        => 'Le montant doit être une valeur numérique.',
-            'montant.min'            => 'Le montant doit être d\'au moins 1 FCFA.',
-            'date_depense.required'  => 'La date de la dépense est obligatoire.',
-            'date_depense.date'      => 'La date de la dépense n\'est pas valide.',
-            'mode_paiement.required' => 'Veuillez sélectionner un mode de paiement.',
-            'justificatif.file'      => 'Le justificatif doit être un fichier valide.',
-            'justificatif.mimes'     => 'Le justificatif doit être au format JPG, PNG, WEBP ou PDF.',
-            'justificatif.max'       => 'La taille du justificatif ne doit pas dépasser 5 Mo.',
+            'beneficiaire'  => 'nullable|string|max:255',
+            'description'   => 'nullable|string',
+            'statut'        => 'nullable|in:validee,en_attente,annulee',
+            'justificatif'  => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:5120',
         ]);
 
         $data = $request->only([
@@ -239,16 +243,18 @@ class DepenseController extends Controller
             'description',
         ]);
 
-        // Remplacement du justificatif
+        if ($request->filled('statut')) {
+            $data['statut'] = $request->input('statut');
+        }
+
         if ($request->hasFile('justificatif')) {
-            // Suppression de l'ancien fichier
             if ($depense->justificatif && File::exists(public_path($depense->justificatif))) {
                 File::delete(public_path($depense->justificatif));
             }
 
             $file = $request->file('justificatif');
             $uploadDir = public_path('uploads/justificatifs_depenses');
-            if (!File::isDirectory($uploadDir)) {
+            if (! File::isDirectory($uploadDir)) {
                 File::makeDirectory($uploadDir, 0755, true, true);
             }
             $fileName = 'justificatif_' . time() . '_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
@@ -262,14 +268,11 @@ class DepenseController extends Controller
                          ->with('success', 'Dépense mise à jour avec succès.');
     }
 
-    /**
-     * Suppression d'une dépense
-     */
-    public function destroy(Depense $depense)
+    public function destroy($id)
     {
-        if (!Auth::user()->hasAnyRole(['Administrateur', 'super admin']) && !Auth::user()->can('delete depense')) {
-            abort(403, 'Accès refusé. Seul un administrateur est autorisé à supprimer une dépense.');
-        }
+        $this->checkPermission('delete');
+        $depense = Depense::withoutGlobalScope('entreprise')->findOrFail($id);
+        $this->ensureSameEntreprise($depense);
 
         if ($depense->justificatif && File::exists(public_path($depense->justificatif))) {
             File::delete(public_path($depense->justificatif));
@@ -281,12 +284,10 @@ class DepenseController extends Controller
                          ->with('success', 'Dépense supprimée avec succès.');
     }
 
-    /**
-     * Export PDF des dépenses
-     */
     public function exportPdf(Request $request)
     {
-        $query = Depense::with('user');
+        $this->checkPermission('exporter');
+        $query = Depense::with('user')->where('statut', 'validee');
 
         if ($request->filled('categorie')) {
             $query->where('categorie', $request->input('categorie'));
@@ -312,21 +313,19 @@ class DepenseController extends Controller
         });
 
         $pdf = Pdf::loadView('admin.depenses.pdf', [
-            'depenses' => $depenses,
-            'total' => $total,
-            'repartition' => $repartition,
+            'depenses'       => $depenses,
+            'total'          => $total,
+            'repartition'    => $repartition,
             'dateGeneration' => Carbon::now()->format('d/m/Y H:i'),
         ])->setPaper('a4', 'portrait');
 
         return $pdf->download('rapport_depenses_' . Carbon::now()->format('Ymd_His') . '.pdf');
     }
 
-    /**
-     * Export Excel des dépenses
-     */
     public function exportExcel(Request $request): StreamedResponse
     {
-        $query = Depense::with('user');
+        $this->checkPermission('exporter');
+        $query = Depense::with('user')->where('statut', 'validee');
 
         if ($request->filled('categorie')) {
             $query->where('categorie', $request->input('categorie'));
@@ -350,13 +349,6 @@ class DepenseController extends Controller
         $headers = ['Date', 'Titre de la dépense', 'Catégorie', 'Montant (FCFA)', 'Mode de paiement', 'Bénéficiaire', 'Enregistré par'];
         $sheet->fromArray($headers, null, 'A1');
 
-        $headerStyle = [
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '1A237E']],
-            'borders' => ['allBorders' => ['borderStyle' => 'thin']],
-        ];
-        $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
-
         $rowIndex = 2;
         foreach ($depenses as $d) {
             $sheet->setCellValue("A{$rowIndex}", Carbon::parse($d->date_depense)->format('d/m/Y'));
@@ -369,17 +361,8 @@ class DepenseController extends Controller
             $rowIndex++;
         }
 
-        // Ligne Total
         $sheet->setCellValue("C{$rowIndex}", 'TOTAL DÉPENSES');
         $sheet->setCellValue("D{$rowIndex}", $depenses->sum('montant'));
-        $sheet->getStyle("C{$rowIndex}:D{$rowIndex}")->applyFromArray([
-            'font' => ['bold' => true],
-            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'EEEEEE']],
-        ]);
-
-        foreach (range('A', 'G') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
 
         $writer = new Xlsx($spreadsheet);
         $fileName = 'rapport_depenses_' . Carbon::now()->format('Ymd_His') . '.xlsx';

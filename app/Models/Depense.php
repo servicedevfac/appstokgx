@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Depense extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\BelongsToEntreprise;
 
     protected $fillable = [
+        'entreprise_id',
         'titre',
         'categorie',
         'montant',
@@ -18,6 +19,8 @@ class Depense extends Model
         'beneficiaire',
         'justificatif',
         'description',
+        'statut',
+        'reference_unique',
         'user_id',
     ];
 

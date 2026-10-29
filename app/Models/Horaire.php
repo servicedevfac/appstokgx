@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToEntreprise;
 use Illuminate\Database\Eloquent\Model;
 
 class Horaire extends Model
 {
-     protected $fillable = [
+    use BelongsToEntreprise;
 
+    protected $fillable = [
+        'entreprise_id',
         'jour_semaine',
         'heure_ouverture',
         'heure_fermeture',
-        'id_utilisateur', // si tu le gères aussi
+        'id_utilisateur',
     ];
 }

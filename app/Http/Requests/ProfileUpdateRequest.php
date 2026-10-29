@@ -13,10 +13,19 @@ class ProfileUpdateRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+    protected function prepareForValidation(): void
+    {
+        if (! $this->filled('nom') && $this->filled('name')) {
+            $this->merge(['nom' => $this->input('name')]);
+        }
+    }
+
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'nom' => ['required', 'string', 'max:255'],
+            'prenom' => ['nullable', 'string', 'max:255'],
+            'telephone' => ['nullable', 'string', 'max:30'],
             'email' => [
                 'required',
                 'string',

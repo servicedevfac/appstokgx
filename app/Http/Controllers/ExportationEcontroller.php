@@ -6,9 +6,9 @@ use App\Models\Client;
 use App\Models\MouvementStock;
 use App\Models\Produit;
 use App\Models\Vente;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -17,15 +17,17 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ExportationEcontroller extends Controller
 {
     /**
-     * Export Excel de la liste des ventes
+     * Export Excel de la liste des ventes de l'entreprise active.
      */
     public function exportation(Request $request): StreamedResponse
     {
+        abort_unless(Auth::user()->can('exporter vente') || Auth::user()->can('afficher ventes'), 403);
+
         $filename = "Liste_des_ventes_" . now()->format('Ymd_His') . ".xlsx";
 
         $ventes = Vente::with('client')
-            ->where('statut', 'valide')
-            ->select('client_id', 'created_at', 'code_recu', 'mode_paiement', 'montant_paye', 'reste_a_payer', 'montant_total')
+            ->where('statut', '!=', 'annulee')
+            ->select('id', 'entreprise_id', 'client_id', 'created_at', 'code_recu', 'mode_paiement', 'montant_paye', 'reste_a_payer', 'montant_total')
             ->orderByDesc('created_at')
             ->get();
 
@@ -77,14 +79,16 @@ class ExportationEcontroller extends Controller
     }
 
     /**
-     * Export Excel des mouvements de stock
+     * Export Excel des mouvements de stock de l'entreprise active.
      */
     public function exportMouvementStock(Request $request): StreamedResponse
     {
+        abort_unless(Auth::user()->can('exporter stock') || Auth::user()->can('afficher mouvements'), 403);
+
         $filename = "Mouvements_de_stock_" . now()->format('Ymd_His') . ".xlsx";
 
         $mouvements = MouvementStock::with('produit')
-            ->orderByDesc('date_mouvement')
+            ->orderByDesc('created_at')
             ->get();
 
         $spreadsheet = new Spreadsheet();
@@ -110,7 +114,7 @@ class ExportationEcontroller extends Controller
             $rowIndex++;
         }
 
-        $sheet->getStyle("A1:E" . ($rowIndex - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle("A1:E" . max(1, $rowIndex - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         foreach (range('A', 'E') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
@@ -123,10 +127,12 @@ class ExportationEcontroller extends Controller
     }
 
     /**
-     * Export des produits (Excel ou PDF)
+     * Export des produits de l'entreprise active (Excel ou PDF).
      */
     public function exportProducts(string $format = 'excel'): StreamedResponse
     {
+        abort_unless(Auth::user()->can('exporter produit') || Auth::user()->can('afficher produits'), 403);
+
         $products = Produit::with('mouvements')->orderBy('nom')->get();
         $headers = ['Nom', 'Prix', 'Stock actuel', 'Seuil alerte'];
 
@@ -174,7 +180,7 @@ class ExportationEcontroller extends Controller
             $rowIndex++;
         }
 
-        $sheet->getStyle("A1:D" . ($rowIndex - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle("A1:D" . max(1, $rowIndex - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         foreach (range('A', 'D') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
@@ -212,7 +218,7 @@ class ExportationEcontroller extends Controller
             $lowStockClass = $product->stock_actuel <= $product->seuil_alerte ? 'class="low-stock"' : '';
 
             $html .= '<tr>';
-            $html .= "<td>{$product->nom}</td>";
+            $html .= "<td>" . e($product->nom) . "</td>";
             $html .= "<td>" . number_format($product->prix, 0, ',', ' ') . " FCFA</td>";
             $html .= "<td {$lowStockClass}>{$product->stock_actuel}</td>";
             $html .= "<td>{$product->seuil_alerte}</td>";
@@ -229,13 +235,15 @@ class ExportationEcontroller extends Controller
     }
 
     /**
-     * Export Excel des clients
+     * Export Excel des clients de l'entreprise active.
      */
     public function exportClients(Request $request): StreamedResponse
     {
+        abort_unless(Auth::user()->can('exporter client') || Auth::user()->can('afficher clients'), 403);
+
         $filename = "Liste_des_clients_" . now()->format('Ymd_His') . ".xlsx";
 
-        $clients = Client::select('nom', 'prenom', 'telephone', 'code_client', 'adresse')
+        $clients = Client::select('id', 'entreprise_id', 'nom', 'prenom', 'telephone', 'code_client', 'adresse')
             ->orderBy('nom')
             ->get();
 
@@ -262,7 +270,7 @@ class ExportationEcontroller extends Controller
             $rowIndex++;
         }
 
-        $sheet->getStyle("A1:E" . ($rowIndex - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle("A1:E" . max(1, $rowIndex - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         foreach (range('A', 'E') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
