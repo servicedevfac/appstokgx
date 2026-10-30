@@ -39,9 +39,36 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $mouvement->produit->nom }}</td>
                             <td>{{ $mouvement->user->nom }}</td>
-                            <td>{{ $mouvement->type_mouvement }}</td>
-                            <td>{{ $mouvement->quantite }}</td>
-                            <td>{{ $mouvement->produit->stock_actuel }}</td>
+                            @php
+                                $typeMouvement = strtolower(trim($mouvement->type_mouvement ?? ''));
+                                $isSortie = in_array($typeMouvement, ['sortie', 'sorties']);
+                                $isEntree = in_array($typeMouvement, ['entree', 'entrée', 'entrees', 'entrées']);
+                            @endphp
+                            <td>
+                                @if($isSortie)
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+                                        <i class="fas fa-arrow-up me-1"></i>Sortie
+                                    </span>
+                                @elseif($isEntree)
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                        <i class="fas fa-arrow-down me-1"></i>Entrée
+                                    </span>
+                                @else
+                                    <span class="badge bg-secondary-subtle text-secondary px-2 py-1">
+                                        {{ ucfirst($mouvement->type_mouvement) }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($isSortie)
+                                    <span class="fw-bold text-danger fs-6" style="color: #dc3545 !important;">-{{ $mouvement->quantite }}</span>
+                                @elseif($isEntree)
+                                    <span class="fw-bold text-success fs-6" style="color: #198754 !important;">+{{ $mouvement->quantite }}</span>
+                                @else
+                                    <span class="fw-bold fs-6">{{ $mouvement->quantite }}</span>
+                                @endif
+                            </td>
+                            <td class="fw-semibold">{{ $mouvement->stock_apres_mouvement ?? $mouvement->produit?->stock_actuel ?? 0 }}</td>
                             <td>{{ $mouvement->motif }}</td>
                             <td>{{ \Carbon\Carbon::parse($mouvement->created_at)->format('d/m/Y H:i') }}</td>
 

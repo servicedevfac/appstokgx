@@ -108,7 +108,9 @@ class ExportationEcontroller extends Controller
         foreach ($mouvements as $mouvement) {
             $sheet->setCellValue("A{$rowIndex}", $mouvement->produit->nom ?? '-');
             $sheet->setCellValue("B{$rowIndex}", ucfirst($mouvement->type_mouvement));
-            $sheet->setCellValue("C{$rowIndex}", $mouvement->quantite);
+            $typeMouvement = strtolower(trim($mouvement->type_mouvement ?? ''));
+            $signe = in_array($typeMouvement, ['sortie', 'sorties']) ? '-' : (in_array($typeMouvement, ['entree', 'entrée', 'entrees', 'entrées']) ? '+' : '');
+            $sheet->setCellValue("C{$rowIndex}", $signe . $mouvement->quantite);
             $sheet->setCellValue("D{$rowIndex}", Carbon::parse($mouvement->date_mouvement)->format('d/m/Y'));
             $sheet->setCellValue("E{$rowIndex}", $mouvement->motif);
             $rowIndex++;

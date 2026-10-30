@@ -48,4 +48,25 @@ class MouvementStock extends Model
     {
         return $this->type_mouvement;
     }
+
+    /**
+     * Calcule le stock du produit résultant immédiatement après ce mouvement précis.
+     */
+    public function getStockApresMouvementAttribute(): int
+    {
+        $query = static::withoutGlobalScopes()
+            ->where('produit_id', $this->produit_id)
+            ->where(function ($q) {
+                $q->where('created_at', '<', $this->created_at)
+                  ->orWhere(function ($q2) {
+                      $q2->where('created_at', $this->created_at)
+                         ->where('id', '<=', $this->id);
+                  });
+            });
+
+        $entrees = (clone $query)->where('type_mouvement', 'entree')->sum('quantite');
+        $sorties = (clone $query)->where('type_mouvement', 'sortie')->sum('quantite');
+
+        return (int) ($entrees - $sorties);
+    }
 }
