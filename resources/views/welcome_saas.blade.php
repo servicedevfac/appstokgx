@@ -980,10 +980,9 @@
             <div class="collapse navbar-collapse" :class="{ 'show': mobileMenuOpen }" id="navbarMain">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-1 mt-3 mt-lg-0">
                     <li class="nav-item"><a class="nav-link-sb" href="#accueil" @click="mobileMenuOpen = false">Accueil</a></li>
-                    <li class="nav-item"><a class="nav-link-sb" href="#presentation" @click="mobileMenuOpen = false">Plateforme</a></li>
                     <li class="nav-item"><a class="nav-link-sb" href="#fonctionnalites" @click="mobileMenuOpen = false">Fonctionnalités</a></li>
-                    <li class="nav-item"><a class="nav-link-sb" href="#comment-ca-marche" @click="mobileMenuOpen = false">Comment ça marche</a></li>
-                    <li class="nav-item"><a class="nav-link-sb" href="#avantages" @click="mobileMenuOpen = false">Avantages</a></li>  
+                    <li class="nav-item"><a class="nav-link-sb" href="#tarifs" @click="mobileMenuOpen = false">Tarifs</a></li>
+                    <li class="nav-item"><a class="nav-link-sb" href="#faq" @click="mobileMenuOpen = false">FAQ</a></li>
                 </ul>
 
                 <!-- Actions Droite -->
