@@ -982,11 +982,8 @@
                     <li class="nav-item"><a class="nav-link-sb" href="#accueil" @click="mobileMenuOpen = false">Accueil</a></li>
                     <li class="nav-item"><a class="nav-link-sb" href="#presentation" @click="mobileMenuOpen = false">Plateforme</a></li>
                     <li class="nav-item"><a class="nav-link-sb" href="#fonctionnalites" @click="mobileMenuOpen = false">Fonctionnalités</a></li>
-                    <li class="nav-item"><a class="nav-link-sb" href="#logiciel" @click="mobileMenuOpen = false">Aperçu Logiciel</a></li>
                     <li class="nav-item"><a class="nav-link-sb" href="#comment-ca-marche" @click="mobileMenuOpen = false">Comment ça marche</a></li>
-                    <li class="nav-item"><a class="nav-link-sb" href="#avantages" @click="mobileMenuOpen = false">Avantages</a></li>
-                    <li class="nav-item"><a class="nav-link-sb" href="#tarifs" @click="mobileMenuOpen = false">Tarifs</a></li>
-                    <li class="nav-item"><a class="nav-link-sb" href="#faq" @click="mobileMenuOpen = false">FAQ</a></li>
+                    <li class="nav-item"><a class="nav-link-sb" href="#avantages" @click="mobileMenuOpen = false">Avantages</a></li>  
                 </ul>
 
                 <!-- Actions Droite -->
