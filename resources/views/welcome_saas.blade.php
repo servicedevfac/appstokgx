@@ -953,6 +953,267 @@
                 animation: none !important;
             }
         }
+
+        /* ========================================================
+           10. RESPONSIVE DESIGN & ADAPTATIONS MULTI-ÉCRANS
+           ======================================================== */
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
+        /* Navbar Mobile & Tablette */
+        @media (max-width: 991.98px) {
+            .navbar-stockbox .navbar-collapse {
+                background: #ffffff;
+                border: 1px solid var(--sb-border);
+                border-radius: 1rem;
+                padding: 1.25rem;
+                margin-top: 0.85rem;
+                box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.12);
+            }
+            .navbar-stockbox .nav-link-sb {
+                display: block;
+                padding: 0.75rem 1rem;
+                width: 100%;
+                border-radius: 0.5rem;
+                font-size: 1rem;
+            }
+            .navbar-stockbox .nav-link-sb:hover {
+                background: var(--sb-blue-subtle);
+            }
+            .navbar-stockbox .nav-link-sb::after {
+                display: none;
+            }
+            .navbar-stockbox .navbar-collapse .d-flex.align-items-center.gap-2 {
+                flex-direction: column;
+                align-items: stretch !important;
+                width: 100%;
+                gap: 0.65rem !important;
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid var(--sb-border);
+            }
+            .navbar-stockbox .navbar-collapse .btn-sb-primary,
+            .navbar-stockbox .navbar-collapse .btn-sb-secondary,
+            .navbar-stockbox .navbar-collapse form {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+            .navbar-stockbox .navbar-collapse form button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* Cacher les cartes flottantes sur tablettes et mobiles pour éviter tout débordement */
+            .floating-card-1, 
+            .floating-card-2 {
+                display: none !important;
+            }
+        }
+
+        /* Cartes flottantes sur écrans intermédiaires */
+        @media (min-width: 992px) and (max-width: 1200px) {
+            .floating-card-1 {
+                right: 0px;
+                top: -16px;
+            }
+            .floating-card-2 {
+                left: 0px;
+                bottom: -16px;
+            }
+        }
+
+        /* Hero & Section Spacing sur Tablette et Mobile */
+        @media (max-width: 767.98px) {
+            .hero-section {
+                padding: 2.75rem 0 3.5rem;
+            }
+            .section-padding {
+                padding: 3.5rem 0;
+            }
+            .section-header {
+                margin-bottom: 2.25rem;
+            }
+            .section-title {
+                font-size: 1.85rem;
+            }
+            .section-desc {
+                font-size: 0.98rem;
+            }
+            .sb-card {
+                padding: 1.35rem;
+            }
+            .pricing-card {
+                padding: 1.5rem;
+            }
+            .final-cta-section {
+                padding: 4rem 0;
+            }
+            .footer-stockbox {
+                padding: 3.5rem 0 1.5rem;
+            }
+        }
+
+        /* Écrans Mobiles (< 576px) */
+        @media (max-width: 575.98px) {
+            .hero-section {
+                padding: 2rem 0 2.75rem;
+            }
+            .hero-title {
+                font-size: 1.95rem;
+                line-height: 1.22;
+                margin-bottom: 1rem;
+            }
+            .typing-container {
+                display: inline-block;
+                white-space: normal;
+                word-break: break-word;
+                min-height: auto;
+            }
+            .typing-cursor {
+                height: 0.95em;
+                width: 2.5px;
+                margin-left: 3px;
+                vertical-align: -0.05em;
+            }
+            .hero-subtitle {
+                font-size: 0.98rem;
+                margin-bottom: 1.5rem;
+            }
+
+            /* Boutons d'action Hero pleine largeur sur mobile */
+            .hero-cta-group {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+            .hero-cta-group form,
+            .hero-cta-group .btn-sb-primary,
+            .hero-cta-group .btn-sb-secondary {
+                width: 100%;
+                justify-content: center;
+                padding: 0.8rem 1.25rem !important;
+                font-size: 0.98rem !important;
+            }
+
+            /* Dashboard Mockup dans le Hero */
+            .hero-warehouse-stage {
+                padding: 0.85rem 1rem;
+                border-radius: 1rem 1rem 0 0;
+            }
+            .dashboard-mockup {
+                border-radius: 0 0 1rem 1rem;
+            }
+            .dashboard-mockup-header {
+                padding: 0.65rem 0.85rem;
+            }
+            .dashboard-mockup .p-sm-4 {
+                padding: 0.85rem !important;
+            }
+            .dashboard-kpi-card {
+                padding: 0.65rem 0.5rem;
+                border-radius: 0.65rem;
+            }
+            .dashboard-kpi-card .fs-6 {
+                font-size: 0.82rem !important;
+            }
+            .dashboard-kpi-card .text-muted {
+                font-size: 0.68rem !important;
+            }
+            .dashboard-kpi-card .small {
+                font-size: 0.68rem !important;
+            }
+
+            /* Titres de sections sur petits téléphones */
+            .section-title {
+                font-size: 1.65rem;
+                line-height: 1.25;
+            }
+            .section-badge {
+                font-size: 0.75rem;
+            }
+            .section-desc {
+                font-size: 0.92rem;
+            }
+
+            /* Toggle Paiement Tarifs sur Mobile */
+            .billing-toggle-container {
+                display: flex !important;
+                flex-direction: column !important;
+                border-radius: 1rem !important;
+                width: 100%;
+                max-width: 320px;
+                margin: 1.25rem auto 0 !important;
+                gap: 0.5rem !important;
+                padding: 0.5rem !important;
+            }
+            .billing-toggle-container button {
+                width: 100%;
+                border-radius: 0.75rem !important;
+                padding: 0.55rem 1rem !important;
+            }
+
+            /* Boutons CTA final */
+            .final-cta-group {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+            .final-cta-group form,
+            .final-cta-group .btn-sb-primary,
+            .final-cta-group .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .final-cta-section h2 {
+                font-size: 1.85rem !important;
+            }
+            .final-cta-section p.lead {
+                font-size: 1rem !important;
+            }
+
+            /* FAQ Accordéon */
+            .faq-button {
+                padding: 1rem 1.15rem;
+                font-size: 0.95rem;
+            }
+            .faq-answer {
+                padding: 0 1.15rem 1.15rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Conteneur défilant pour les onglets du logiciel sur mobile */
+        .tabs-scroll-container {
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: center;
+        }
+        @media (max-width: 767.98px) {
+            .tabs-scroll-container {
+                justify-content: flex-start;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            .tabs-button-group {
+                flex-wrap: nowrap;
+                white-space: nowrap;
+            }
+            .tab-btn {
+                padding: 0.5rem 0.85rem;
+                font-size: 0.84rem;
+                white-space: nowrap;
+            }
+        }
+
+        /* Tables responsives à l'intérieur de la maquette */
+        .dashboard-mockup .table-responsive table {
+            min-width: 540px;
+        }
     </style>
 </head>
 <body x-data="{ mobileMenuOpen: false, activeTab: 'dashboard', billing: 'mensuel', openFaq: null }">
@@ -1000,7 +1261,7 @@
                         <form action="{{ route('demo.login') }}" method="POST" class="d-inline m-0">
                             @csrf
                             <button type="submit" class="btn-sb-primary">
-                                <span>Commencer gratuitement</span>
+                                <span>Test Demo</span>
                                 <i data-lucide="arrow-right" style="width: 17px; height: 17px;"></i>
                             </button>
                         </form>
@@ -1020,13 +1281,7 @@
             <div class="row align-items-center g-5">
                 <!-- Colonne Gauche : Copywriting avec Typing Effect & CTAs -->
                 <div class="col-lg-6">
-                    <div class="hero-badge-in">
-                        <div class="hero-badge">
-                            <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
-                            <span>La gestion de stock, simplement.</span>
-                        </div>
-                    </div>
-
+                  
                     <div class="hero-title-in">
                         <h1 class="hero-title">
                             Votre gestion de stock devient<br>
@@ -1043,7 +1298,7 @@
                     </div>
 
                     <div class="hero-cta-in">
-                        <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+                        <div class="d-flex flex-wrap gap-3 align-items-center mb-4 hero-cta-group">
                             <form action="{{ route('demo.login') }}" method="POST" class="d-inline m-0">
                                 @csrf
                                 <button type="submit" class="btn-sb-primary" style="padding: 0.85rem 1.65rem; font-size: 1.05rem;">
@@ -1702,24 +1957,26 @@
                     Explorez les écrans clés de STOCKBOX. Chaque vue est pensée pour offrir une rapidité de saisie maximale et une clarté absolue.
                 </p>
 
-                <!-- Boutons d'onglets Alpine.js -->
-                <div class="d-inline-flex p-1 bg-light rounded-3 border mt-4 shadow-sm">
-                    <button class="tab-btn" :class="{ 'active': activeTab === 'dashboard' }" @click="activeTab = 'dashboard'">
-                        <i data-lucide="layout-dashboard" style="width: 17px; height: 17px;"></i>
-                        <span>Tableau de bord</span>
-                    </button>
-                    <button class="tab-btn" :class="{ 'active': activeTab === 'produits' }" @click="activeTab = 'produits'">
-                        <i data-lucide="package" style="width: 17px; height: 17px;"></i>
-                        <span>Catalogue Produits</span>
-                    </button>
-                    <button class="tab-btn" :class="{ 'active': activeTab === 'mouvements' }" @click="activeTab = 'mouvements'">
-                        <i data-lucide="arrow-left-right" style="width: 17px; height: 17px;"></i>
-                        <span>Suivi Mouvements</span>
-                    </button>
-                    <button class="tab-btn" :class="{ 'active': activeTab === 'alertes' }" @click="activeTab = 'alertes'">
-                        <i data-lucide="alert-circle" style="width: 17px; height: 17px;"></i>
-                        <span>Alertes Seuil</span>
-                    </button>
+                <!-- Boutons d'onglets Alpine.js avec défilement fluide sur mobile -->
+                <div class="tabs-scroll-container mt-4">
+                    <div class="d-inline-flex p-1 bg-light rounded-3 border shadow-sm tabs-button-group">
+                        <button class="tab-btn" :class="{ 'active': activeTab === 'dashboard' }" @click="activeTab = 'dashboard'">
+                            <i data-lucide="layout-dashboard" style="width: 17px; height: 17px;"></i>
+                            <span>Tableau de bord</span>
+                        </button>
+                        <button class="tab-btn" :class="{ 'active': activeTab === 'produits' }" @click="activeTab = 'produits'">
+                            <i data-lucide="package" style="width: 17px; height: 17px;"></i>
+                            <span>Catalogue Produits</span>
+                        </button>
+                        <button class="tab-btn" :class="{ 'active': activeTab === 'mouvements' }" @click="activeTab = 'mouvements'">
+                            <i data-lucide="arrow-left-right" style="width: 17px; height: 17px;"></i>
+                            <span>Suivi Mouvements</span>
+                        </button>
+                        <button class="tab-btn" :class="{ 'active': activeTab === 'alertes' }" @click="activeTab = 'alertes'">
+                            <i data-lucide="alert-circle" style="width: 17px; height: 17px;"></i>
+                            <span>Alertes Seuil</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -2241,7 +2498,7 @@
                 </p>
 
                 <!-- Toggle Mensuel / Annuel -->
-                <div class="d-inline-flex align-items-center gap-3 p-1 bg-white rounded-pill border shadow-sm mt-4">
+                <div class="d-inline-flex align-items-center gap-2 gap-sm-3 p-1 bg-white rounded-pill border shadow-sm mt-4 billing-toggle-container">
                     <button class="btn btn-sm rounded-pill px-4 fw-semibold transition" :class="billing === 'mensuel' ? 'btn-primary' : 'btn-light text-muted'" @click="billing = 'mensuel'">
                         Paiement Mensuel
                     </button>
@@ -2486,7 +2743,7 @@
                     <p class="lead text-slate-300 mb-4 opacity-75">
                         Rejoignez les commerces et PME qui font confiance à STOCKBOX pour fiabiliser leurs mouvements, éliminer les ruptures et prendre de meilleures décisions.
                     </p>
-                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <div class="d-flex flex-wrap justify-content-center gap-3 final-cta-group">
                         <form action="{{ route('demo.login') }}" method="POST" class="m-0">
                             @csrf
                             <button type="submit" class="btn-sb-primary" style="padding: 0.85rem 1.85rem; font-size: 1.05rem;">
@@ -2573,8 +2830,7 @@
                     &copy; {{ date('Y') }} STOCKBOX SaaS. Tous droits réservés.
                 </div>
                 <div class="d-flex gap-3">
-                    <span class="text-slate-400">Isolation SaaS multi-entreprises</span>
-                    <span>•</span>
+                   
                     <span class="text-slate-400">Stock & Logistique</span>
                 </div>
             </div>
