@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STOCKBOX — Logiciel SaaS de Gestion de Stock & Approvisionnements</title>
-    <meta name="description" content="Centralisez vos produits, maîtrisez vos entrées et sorties, anticipez les ruptures et prenez de meilleures décisions grâce à STOCKBOX.">
+    <title>StockGX — Logiciel SaaS de Gestion de Stock & Approvisionnements</title>
+    <meta name="description" content="Centralisez vos produits, maîtrisez vos entrées et sorties, anticipez les ruptures et prenez de meilleures décisions grâce à StockGX.">
     <meta name="keywords" content="gestion de stock, saas stock, inventaire, mouvements stock, alertes rupture, gestion approvisionnements">
     
     <!-- Open Graph / Meta Partage -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="STOCKBOX — Votre stock sous contrôle. Votre entreprise en avance.">
+    <meta property="og:title" content="StockGX — Votre stock sous contrôle. Votre entreprise en avance.">
     <meta property="og:description" content="Plateforme SaaS moderne pour piloter vos stocks, catalogues, mouvements et alertes de réapprovisionnement.">
     <meta property="og:url" content="{{ url('/') }}">
     <meta property="og:image" content="{{ url('assets/images/logo-sm.png') }}">
@@ -31,20 +31,43 @@
 
     <style>
         :root {
-            --sb-night: #0F172A;
-            --sb-night-light: #1E293B;
-            --sb-blue: #2563EB;
-            --sb-blue-hover: #1D4ED8;
-            --sb-blue-light: #60A5FA;
-            --sb-blue-subtle: #EFF6FF;
-            --sb-bg: #F8FAFC;
+            /* ========================================================
+               CHARTE GRAPHIQUE OFFICIELLE STOCKGX
+               ======================================================== */
+            --sb-primary: #1A237E;         /* Indigo Royal Profond — Couleur emblème StockGX */
+            --sb-primary-hover: #283593;   /* Indigo Lumineux au survol */
+            --sb-primary-dark: #0D1642;    /* Bleu Nuit Profond StockGX */
+            --sb-primary-light: #3D5AFE;   /* Bleu Électrique Vif */
+            --sb-primary-subtle: #EEF2FF;  /* Voile Indigo Doux */
+            --sb-primary-rgb: 26, 35, 126;
+
+            /* Accent Signature Doré / Ambre StockGX */
+            --sb-accent: #F9A825;          /* Ambre Doré */
+            --sb-accent-hover: #F57F17;    /* Ambre Foncé */
+            --sb-accent-light: #FBC02D;    /* Ambre Clair */
+            --sb-accent-dark: #C17900;     /* Ambre Soutenu */
+            --sb-accent-subtle: #FFF8E1;   /* Fond Ambre Doux */
+            --sb-accent-rgb: 249, 168, 37;
+
+            /* Alias de compatibilité pour l'ensemble des composants */
+            --sb-blue: var(--sb-primary);
+            --sb-blue-hover: var(--sb-primary-hover);
+            --sb-blue-light: var(--sb-primary-light);
+            --sb-blue-subtle: var(--sb-primary-subtle);
+
+            /* Couleurs Sémantiques & Surfaces */
+            --sb-night: #0D1642;           /* Bleu Nuit Profond StockGX */
+            --sb-night-light: #1A237E;     /* Nuit Intermédiaire */
+            --sb-bg: #F4F6FC;              /* Fond de page teinté StockGX */
             --sb-white: #FFFFFF;
             --sb-text: #111827;
-            --sb-muted: #64748B;
-            --sb-green: #16A34A;
-            --sb-orange: #F59E0B;
+            --sb-muted: #5A6A85;
+            --sb-green: #00C853;           /* Vert succès énergique */
+            --sb-green-subtle: #E8F5E9;
+            --sb-orange: #FF9800;          /* Orange alerte */
+            --sb-orange-subtle: #FFF3E0;
             --sb-border: #E2E8F0;
-            --sb-border-focus: #93C5FD;
+            --sb-border-focus: #9FA8DA;
         }
 
         body {
@@ -59,7 +82,7 @@
         /* ========================================================
            1. NAVBAR ANIMÉE & STICKY BLUR
            ======================================================== */
-        .navbar-stockbox {
+        .navbar-stockgx {
             background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -70,7 +93,7 @@
                         border-color 0.35s ease;
             animation: navSlideDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        .navbar-stockbox.navbar-scrolled {
+        .navbar-stockgx.navbar-scrolled {
             padding-top: 0.65rem !important;
             padding-bottom: 0.65rem !important;
             background: rgba(255, 255, 255, 0.96) !important;
@@ -132,13 +155,13 @@
            2. BOUTONS & MICRO-INTERACTIONS
            ======================================================== */
         .btn-sb-primary {
-            background-color: var(--sb-blue);
+            background: linear-gradient(135deg, var(--sb-primary) 0%, var(--sb-primary-hover) 100%);
             color: #ffffff;
             font-weight: 600;
             padding: 0.65rem 1.4rem;
             border-radius: 0.65rem;
-            border: 1px solid var(--sb-blue);
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+            border: 1px solid var(--sb-primary);
+            box-shadow: 0 4px 14px rgba(26, 35, 126, 0.28);
             transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
             display: inline-flex;
             align-items: center;
@@ -149,15 +172,15 @@
             overflow: hidden;
         }
         .btn-sb-primary:hover {
-            background-color: var(--sb-blue-hover);
-            border-color: var(--sb-blue-hover);
+            background: linear-gradient(135deg, var(--sb-primary-hover) 0%, #303F9F 100%);
+            border-color: var(--sb-primary-hover);
             color: #ffffff;
             transform: translateY(-2px);
-            box-shadow: 0 8px 22px rgba(37, 99, 235, 0.38);
+            box-shadow: 0 8px 22px rgba(26, 35, 126, 0.4);
         }
         .btn-sb-primary:active {
             transform: translateY(1px) scale(0.98);
-            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 2px 6px rgba(26, 35, 126, 0.2);
         }
 
         .btn-sb-secondary {
@@ -177,7 +200,7 @@
         }
         .btn-sb-secondary:hover {
             background-color: #f8fafc;
-            color: var(--sb-blue);
+            color: var(--sb-primary);
             border-color: #cbd5e1;
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
@@ -191,7 +214,7 @@
            ======================================================== */
         .hero-section {
             padding: 4.8rem 0 5.5rem;
-            background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+            background: linear-gradient(180deg, #FFFFFF 0%, #F4F6FC 100%);
             position: relative;
             overflow: hidden;
         }
@@ -204,7 +227,7 @@
             width: 520px;
             height: 520px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(96, 165, 250, 0.16) 0%, rgba(37, 99, 235, 0.05) 50%, transparent 70%);
+            background: radial-gradient(circle, rgba(26, 35, 126, 0.14) 0%, rgba(249, 168, 37, 0.08) 50%, transparent 70%);
             filter: blur(48px);
             pointer-events: none;
             z-index: 0;
@@ -217,7 +240,7 @@
             width: 480px;
             height: 480px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, rgba(14, 165, 233, 0.04) 50%, transparent 70%);
+            background: radial-gradient(circle, rgba(26, 35, 126, 0.16) 0%, rgba(61, 90, 254, 0.06) 50%, transparent 70%);
             filter: blur(52px);
             pointer-events: none;
             z-index: 0;
@@ -288,17 +311,18 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.4rem 1rem;
+            padding: 0.42rem 1.1rem;
             font-size: 0.86rem;
             font-weight: 600;
-            color: var(--sb-blue);
-            background-color: var(--sb-blue-subtle);
-            border: 1px solid rgba(37, 99, 235, 0.22);
+            color: var(--sb-primary);
+            background: linear-gradient(135deg, var(--sb-primary-subtle) 0%, var(--sb-accent-subtle) 100%);
+            border: 1px solid rgba(26, 35, 126, 0.2);
             border-radius: 9999px;
             margin-bottom: 1.25rem;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+            box-shadow: 0 2px 10px rgba(26, 35, 126, 0.08);
         }
         .hero-badge i {
+            color: var(--sb-accent);
             animation: badgeSparkle 3s ease-in-out infinite;
         }
         @keyframes badgeSparkle {
@@ -329,20 +353,20 @@
             white-space: nowrap;
         }
         .typing-text {
-            color: var(--sb-blue);
+            color: var(--sb-primary);
             font-weight: 800;
-            text-shadow: 0 0 24px rgba(37, 99, 235, 0.25);
+            text-shadow: 0 0 24px rgba(26, 35, 126, 0.25);
             transition: opacity 0.15s ease;
         }
         .typing-cursor {
             display: inline-block;
             width: 3.5px;
             height: 1.05em;
-            background-color: var(--sb-blue);
+            background-color: var(--sb-accent);
             margin-left: 6px;
             vertical-align: -0.1em;
             border-radius: 2px;
-            box-shadow: 0 0 10px rgba(37, 99, 235, 0.6);
+            box-shadow: 0 0 10px rgba(249, 168, 37, 0.7);
             animation: cursorBlink 0.85s infinite;
         }
         @keyframes cursorBlink {
@@ -362,14 +386,14 @@
            4. ILLUSTRATION 3D HERO : ENVIRONNEMENT DE STOCK
            ======================================================== */
         .hero-warehouse-stage {
-            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            background: linear-gradient(135deg, #0D1642 0%, #1A237E 100%);
             border-radius: 1.25rem 1.25rem 0 0;
             padding: 1.25rem 1.5rem;
-            border: 1px solid rgba(226, 232, 240, 0.15);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.1);
+            border: 1px solid rgba(249, 168, 37, 0.25);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
         .scanner-laser-beam {
             animation: laserScanPulse 2.2s ease-in-out infinite alternate;
@@ -802,28 +826,28 @@
             box-shadow: 0 20px 42px -10px rgba(15, 23, 42, 0.1);
         }
         .pricing-card.featured {
-            border: 2px solid var(--sb-blue);
-            box-shadow: 0 20px 46px rgba(37, 99, 235, 0.15);
+            border: 2px solid var(--sb-primary);
+            box-shadow: 0 20px 46px rgba(26, 35, 126, 0.16);
             animation: proFeaturedGlow 5s ease-in-out infinite alternate;
         }
         @keyframes proFeaturedGlow {
-            0% { box-shadow: 0 20px 46px rgba(37, 99, 235, 0.12); }
-            100% { box-shadow: 0 26px 54px rgba(37, 99, 235, 0.22); }
+            0% { box-shadow: 0 20px 46px rgba(26, 35, 126, 0.12); }
+            100% { box-shadow: 0 26px 54px rgba(26, 35, 126, 0.24); }
         }
         .featured-badge {
             position: absolute;
             top: -14px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--sb-blue);
-            color: #ffffff;
+            background: linear-gradient(135deg, #F9A825 0%, #F57F17 100%);
+            color: #0D1642;
             font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            padding: 0.32rem 1rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            padding: 0.35rem 1.15rem;
             border-radius: 9999px;
             text-transform: uppercase;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+            box-shadow: 0 4px 14px rgba(249, 168, 37, 0.45);
         }
 
         /* ========================================================
@@ -858,7 +882,7 @@
             transition: color 0.2s ease;
         }
         .faq-button:hover {
-            color: var(--sb-blue);
+            color: var(--sb-primary);
         }
         .faq-chevron {
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
@@ -874,7 +898,7 @@
            9. SECTION FINALE CTA
            ======================================================== */
         .final-cta-section {
-            background: radial-gradient(circle at top right, #1e3a8a 0%, #0F172A 70%);
+            background: radial-gradient(circle at top right, #1A237E 0%, #0D1642 75%);
             color: #ffffff;
             padding: 6rem 0;
             position: relative;
@@ -888,7 +912,7 @@
             width: 650px;
             height: 380px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(37, 99, 235, 0.32) 0%, rgba(30, 58, 138, 0.12) 50%, transparent 75%);
+            background: radial-gradient(circle, rgba(249, 168, 37, 0.25) 0%, rgba(26, 35, 126, 0.32) 50%, transparent 75%);
             filter: blur(55px);
             pointer-events: none;
             animation: finalGlowPulse 6s ease-in-out infinite alternate;
@@ -899,11 +923,12 @@
         }
 
         /* Footer */
-        .footer-stockbox {
-            background: #090e17;
+        .footer-stockgx {
+            background: #080D21;
             color: #94a3b8;
             padding: 4.5rem 0 2rem;
             font-size: 0.92rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
         }
         .footer-title {
             color: #ffffff;
@@ -964,7 +989,7 @@
 
         /* Navbar Mobile & Tablette */
         @media (max-width: 991.98px) {
-            .navbar-stockbox .navbar-collapse {
+            .navbar-stockgx .navbar-collapse {
                 background: #ffffff;
                 border: 1px solid var(--sb-border);
                 border-radius: 1rem;
@@ -972,20 +997,20 @@
                 margin-top: 0.85rem;
                 box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.12);
             }
-            .navbar-stockbox .nav-link-sb {
+            .navbar-stockgx .nav-link-sb {
                 display: block;
                 padding: 0.75rem 1rem;
                 width: 100%;
                 border-radius: 0.5rem;
                 font-size: 1rem;
             }
-            .navbar-stockbox .nav-link-sb:hover {
+            .navbar-stockgx .nav-link-sb:hover {
                 background: var(--sb-blue-subtle);
             }
-            .navbar-stockbox .nav-link-sb::after {
+            .navbar-stockgx .nav-link-sb::after {
                 display: none;
             }
-            .navbar-stockbox .navbar-collapse .d-flex.align-items-center.gap-2 {
+            .navbar-stockgx .navbar-collapse .d-flex.align-items-center.gap-2 {
                 flex-direction: column;
                 align-items: stretch !important;
                 width: 100%;
@@ -994,14 +1019,14 @@
                 padding-top: 1rem;
                 border-top: 1px solid var(--sb-border);
             }
-            .navbar-stockbox .navbar-collapse .btn-sb-primary,
-            .navbar-stockbox .navbar-collapse .btn-sb-secondary,
-            .navbar-stockbox .navbar-collapse form {
+            .navbar-stockgx .navbar-collapse .btn-sb-primary,
+            .navbar-stockgx .navbar-collapse .btn-sb-secondary,
+            .navbar-stockgx .navbar-collapse form {
                 width: 100%;
                 display: flex;
                 justify-content: center;
             }
-            .navbar-stockbox .navbar-collapse form button {
+            .navbar-stockgx .navbar-collapse form button {
                 width: 100%;
                 justify-content: center;
             }
@@ -1051,7 +1076,7 @@
             .final-cta-section {
                 padding: 4rem 0;
             }
-            .footer-stockbox {
+            .footer-stockgx {
                 padding: 3.5rem 0 1.5rem;
             }
         }
@@ -1219,16 +1244,16 @@
 <body x-data="{ mobileMenuOpen: false, activeTab: 'dashboard', billing: 'mensuel', openFaq: null }">
 
     {{-- 1. BARRE DE NAVIGATION STICKY BLUR --}}
-    <nav class="navbar navbar-expand-lg navbar-stockbox sticky-top py-3" id="mainNavbar">
+    <nav class="navbar navbar-expand-lg navbar-stockgx sticky-top py-3" id="mainNavbar">
         <div class="container">
-            <!-- Logo STOCKBOX -->
+            <!-- Logo Officiel StockGX -->
             <a class="d-flex align-items-center gap-2 text-decoration-none" href="{{ route('landing') }}">
-                <div class="brand-logo-badge d-flex align-items-center justify-content-center bg-primary text-white rounded-3 p-2" style="width: 38px; height: 38px; background-color: var(--sb-blue) !important;">
-                    <i data-lucide="package" style="width: 22px; height: 22px;"></i>
+                <div class="brand-logo-badge d-flex align-items-center justify-content-center p-1 rounded-3" style="background: linear-gradient(135deg, rgba(26, 35, 126, 0.08) 0%, rgba(249, 168, 37, 0.15) 100%); border: 1px solid rgba(26, 35, 126, 0.15);">
+                    <img src="{{ url('assets/images/logo-smF.png') }}" alt="StockGX" style="height: 36px; width: 36px; object-fit: contain;">
                 </div>
                 <div class="d-flex flex-column leading-none">
-                    <span class="fw-bold fs-4 tracking-tight" style="color: var(--sb-night); line-height: 1.1;">STOCK<span style="color: var(--sb-blue);">BOX</span></span>
-                    <span class="text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.12em; color: var(--sb-muted);">Inventory SaaS</span>
+                    <span class="fw-bold fs-4 tracking-tight" style="color: var(--sb-night); line-height: 1.1;">Stock<span style="color: var(--sb-primary);">GX</span></span>
+                    <span class="text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.14em; color: var(--sb-accent-dark);">Inventory SaaS</span>
                 </div>
             </a>
 
@@ -1302,7 +1327,7 @@
                             <form action="{{ route('demo.login') }}" method="POST" class="d-inline m-0">
                                 @csrf
                                 <button type="submit" class="btn-sb-primary" style="padding: 0.85rem 1.65rem; font-size: 1.05rem;">
-                                    <span>Commencer gratuitement</span>
+                                    <span>Teste la démo</span>
                                     <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
                                 </button>
                             </form>
@@ -1359,19 +1384,19 @@
 
                         <!-- 1. ILLUSTRATION 3D : ENVIRONNEMENT MODERNE DE GESTION DE STOCK -->
                         <div class="hero-warehouse-stage">
-                            <svg viewBox="0 0 540 135" class="w-100 h-auto" preserveAspectRatio="xMidYMid meet" aria-label="Illustration 3D environnement moderne de gestion de stock STOCKBOX">
+                            <svg viewBox="0 0 540 135" class="w-100 h-auto" preserveAspectRatio="xMidYMid meet" aria-label="Illustration 3D environnement moderne de gestion de stock StockGX">
                                 <defs>
                                     <linearGradient id="hwShelf" x1="0" y1="0" x2="1" y2="1">
                                         <stop offset="0%" stop-color="#334155"/>
                                         <stop offset="100%" stop-color="#1E293B"/>
                                     </linearGradient>
                                     <linearGradient id="hwBoxBlue" x1="0" y1="0" x2="1" y2="1">
-                                        <stop offset="0%" stop-color="#60A5FA"/>
-                                        <stop offset="100%" stop-color="#2563EB"/>
+                                        <stop offset="0%" stop-color="#3D5AFE"/>
+                                        <stop offset="100%" stop-color="#1A237E"/>
                                     </linearGradient>
                                     <linearGradient id="hwBoxAmber" x1="0" y1="0" x2="1" y2="1">
-                                        <stop offset="0%" stop-color="#FBBF24"/>
-                                        <stop offset="100%" stop-color="#D97706"/>
+                                        <stop offset="0%" stop-color="#FBC02D"/>
+                                        <stop offset="100%" stop-color="#F57F17"/>
                                     </linearGradient>
                                     <linearGradient id="hwBoxGreen" x1="0" y1="0" x2="1" y2="1">
                                         <stop offset="0%" stop-color="#4ADE80"/>
@@ -1438,14 +1463,14 @@
                                     <line x1="34" y1="11" x2="-60" y2="22" stroke="#EF4444" stroke-width="2" class="scanner-laser-beam"/>
                                 </g>
 
-                                <!-- Tablette Tactile affichant STOCKBOX -->
+                                <!-- Tablette Tactile affichant StockGX -->
                                 <g transform="translate(255, 16)">
                                     <rect x="0" y="0" width="148" height="98" rx="8" fill="#0B132B" stroke="#334155" stroke-width="2"/>
                                     <rect x="4" y="4" width="140" height="90" rx="5" fill="#1E293B"/>
                                     <!-- Écran : Mini tableau de bord -->
-                                    <rect x="8" y="8" width="132" height="12" rx="3" fill="#2563EB" fill-opacity="0.25"/>
-                                    <circle cx="16" cy="14" r="3" fill="#60A5FA"/>
-                                    <rect x="24" y="12" width="45" height="4" rx="2" fill="#93C5FD"/>
+                                    <rect x="8" y="8" width="132" height="12" rx="3" fill="#1A237E" fill-opacity="0.5"/>
+                                    <image href="{{ url('assets/images/logo-sm.png') }}" x="11" y="9" width="10" height="10" />
+                                    <rect x="25" y="12" width="45" height="4" rx="2" fill="#FBC02D"/>
                                     <!-- 3 mini blocs statistiques -->
                                     <rect x="8" y="24" width="38" height="26" rx="3" fill="#0F172A"/>
                                     <text x="11" y="34" fill="#94A3B8" font-size="5" font-family="Inter">Valeur Stock</text>
@@ -1492,7 +1517,7 @@
                                         <div class="window-dot dot-amber"></div>
                                         <div class="window-dot dot-green"></div>
                                     </div>
-                                    <span class="text-muted small ms-2 fw-medium">app.stockbox.io/dashboard</span>
+                                    <span class="text-muted small ms-2 fw-medium">app.stockgx.io/dashboard</span>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="badge rounded-pill bg-success-subtle text-success small fw-semibold px-2 py-1">
@@ -1613,7 +1638,7 @@
                 <span class="section-badge">Vision Globale</span>
                 <h2 class="section-title">Tout votre stock. Une seule plateforme.</h2>
                 <p class="section-desc">
-                    STOCKBOX vous aide à organiser vos marchandises, suivre vos mouvements et garder une vision claire de vos disponibilités.
+                    StockGX vous aide à organiser vos marchandises, suivre vos mouvements et garder une vision claire de vos disponibilités.
                 </p>
             </div>
 
@@ -1954,7 +1979,7 @@
                 <span class="section-badge">Expérience Utilisateur</span>
                 <h2 class="section-title">Une interface conçue pour votre rythme de travail.</h2>
                 <p class="section-desc">
-                    Explorez les écrans clés de STOCKBOX. Chaque vue est pensée pour offrir une rapidité de saisie maximale et une clarté absolue.
+                    Explorez les écrans clés de StockGX. Chaque vue est pensée pour offrir une rapidité de saisie maximale et une clarté absolue.
                 </p>
 
                 <!-- Boutons d'onglets Alpine.js avec défilement fluide sur mobile -->
@@ -1989,7 +2014,7 @@
                             <div class="window-dot dot-amber"></div>
                             <div class="window-dot dot-green"></div>
                         </div>
-                        <span class="fw-bold small text-dark d-none d-sm-inline">STOCKBOX Entreprise</span>
+                        <span class="fw-bold small text-dark d-none d-sm-inline">StockGX Entreprise</span>
                     </div>
                     <div class="d-flex align-items-center gap-3">
                         <div class="input-group input-group-sm d-none d-md-flex" style="width: 220px;">
@@ -2251,7 +2276,7 @@
                 <span class="section-badge">Prise en Main Rapide</span>
                 <h2 class="section-title">Démarrez en toute simplicité en 4 étapes.</h2>
                 <p class="section-desc">
-                    Pas besoin de jours de formation : l'interface STOCKBOX est conçue pour être opérationnelle dès vos premières minutes.
+                    Pas besoin de jours de formation : l'interface StockGX est conçue pour être opérationnelle dès vos premières minutes.
                 </p>
             </div>
 
@@ -2630,7 +2655,7 @@
                 <span class="section-badge">Réponses & Aide</span>
                 <h2 class="section-title">Questions fréquentes</h2>
                 <p class="section-desc">
-                    Tout ce que vous devez savoir avant de commencer avec la solution STOCKBOX.
+                    Tout ce que vous devez savoir avant de commencer avec la solution StockGX.
                 </p>
             </div>
 
@@ -2639,22 +2664,22 @@
                     <!-- Q1 -->
                     <div class="faq-item reveal-init delay-100">
                         <button class="faq-button" @click="openFaq = openFaq === 1 ? null : 1" type="button">
-                            <span>Qu'est-ce que STOCKBOX exactement ?</span>
+                            <span>Qu'est-ce que StockGX exactement ?</span>
                             <i data-lucide="chevron-down" class="faq-chevron" style="width: 20px; height: 20px;" :style="openFaq === 1 ? 'transform: rotate(180deg); color: var(--sb-blue);' : ''"></i>
                         </button>
                         <div class="faq-answer" x-show="openFaq === 1" x-collapse>
-                            STOCKBOX est un logiciel SaaS complet de gestion de stock et de flux de marchandises conçu pour les commerces, distributeurs et entreprises. Il permet de centraliser vos références produits, de suivre en temps réel chaque entrée et sortie de stock, de recevoir des alertes automatiques avant toute rupture, et de piloter votre rentabilité grâce à des tableaux de bord clairs.
+                            StockGX est un logiciel SaaS complet de gestion de stock et de flux de marchandises conçu pour les commerces, distributeurs et entreprises. Il permet de centraliser vos références produits, de suivre en temps réel chaque entrée et sortie de stock, de recevoir des alertes automatiques avant toute rupture, et de piloter votre rentabilité grâce à des tableaux de bord clairs.
                         </div>
                     </div>
 
                     <!-- Q2 -->
                     <div class="faq-item reveal-init delay-150">
                         <button class="faq-button" @click="openFaq = openFaq === 2 ? null : 2" type="button">
-                            <span>À qui s'adresse STOCKBOX ?</span>
+                            <span>À qui s'adresse StockGX ?</span>
                             <i data-lucide="chevron-down" class="faq-chevron" style="width: 20px; height: 20px;" :style="openFaq === 2 ? 'transform: rotate(180deg); color: var(--sb-blue);' : ''"></i>
                         </button>
                         <div class="faq-answer" x-show="openFaq === 2" x-collapse>
-                            STOCKBOX s'adresse à tout commerce, boutique, grossiste, importateur ou PME qui gère des marchandises physiques et souhaite abandonner les feuilles de calcul complexes au profit d'un outil simple, rapide et partagé en équipe.
+                            StockGX s'adresse à tout commerce, boutique, grossiste, importateur ou PME qui gère des marchandises physiques et souhaite abandonner les feuilles de calcul complexes au profit d'un outil simple, rapide et partagé en équipe.
                         </div>
                     </div>
 
@@ -2665,14 +2690,14 @@
                             <i data-lucide="chevron-down" class="faq-chevron" style="width: 20px; height: 20px;" :style="openFaq === 3 ? 'transform: rotate(180deg); color: var(--sb-blue);' : ''"></i>
                         </button>
                         <div class="faq-answer" x-show="openFaq === 3" x-collapse>
-                            Non, aucune installation n'est requise. STOCKBOX est 100% accessible en ligne depuis n'importe quel navigateur web moderne (Google Chrome, Mozilla Firefox, Safari, Edge), que vous utilisiez un ordinateur, une tablette ou un smartphone.
+                            Non, aucune installation n'est requise. StockGX est 100% accessible en ligne depuis n'importe quel navigateur web moderne (Google Chrome, Mozilla Firefox, Safari, Edge), que vous utilisiez un ordinateur, une tablette ou un smartphone.
                         </div>
                     </div>
 
                     <!-- Q4 -->
                     <div class="faq-item reveal-init delay-250">
                         <button class="faq-button" @click="openFaq = openFaq === 4 ? null : 4" type="button">
-                            <span>Puis-je tester STOCKBOX gratuitement ?</span>
+                            <span>Puis-je tester StockGX gratuitement ?</span>
                             <i data-lucide="chevron-down" class="faq-chevron" style="width: 20px; height: 20px;" :style="openFaq === 4 ? 'transform: rotate(180deg); color: var(--sb-blue);' : ''"></i>
                         </button>
                         <div class="faq-answer" x-show="openFaq === 4" x-collapse>
@@ -2698,7 +2723,7 @@
                             <i data-lucide="chevron-down" class="faq-chevron" style="width: 20px; height: 20px;" :style="openFaq === 6 ? 'transform: rotate(180deg); color: var(--sb-blue);' : ''"></i>
                         </button>
                         <div class="faq-answer" x-show="openFaq === 6" x-collapse>
-                            Oui. STOCKBOX intègre une gestion avancée des rôles et des autorisations. Vous pouvez définir des profils précis (Administrateur, Gestionnaire de stock, Vendeur/Caissier) afin que chaque collaborateur accède uniquement aux fonctions indispensables à ses missions.
+                            Oui. StockGX intègre une gestion avancée des rôles et des autorisations. Vous pouvez définir des profils précis (Administrateur, Gestionnaire de stock, Vendeur/Caissier) afin que chaque collaborateur accède uniquement aux fonctions indispensables à ses missions.
                         </div>
                     </div>
 
@@ -2709,7 +2734,7 @@
                             <i data-lucide="chevron-down" class="faq-chevron" style="width: 20px; height: 20px;" :style="openFaq === 7 ? 'transform: rotate(180deg); color: var(--sb-blue);' : ''"></i>
                         </button>
                         <div class="faq-answer" x-show="openFaq === 7" x-collapse>
-                            Dès qu'une quantité de produit passe en dessous du seuil minimal de sécurité que vous avez fixé, STOCKBOX génère immédiatement une alerte visuelle sur votre tableau de bord et dans la liste dédiée aux réapprovisionnements pour vous permettre de passer commande à temps.
+                            Dès qu'une quantité de produit passe en dessous du seuil minimal de sécurité que vous avez fixé, StockGX génère immédiatement une alerte visuelle sur votre tableau de bord et dans la liste dédiée aux réapprovisionnements pour vous permettre de passer commande à temps.
                         </div>
                     </div>
 
@@ -2741,13 +2766,13 @@
                         Prêt à reprendre le contrôle total de votre stock ?
                     </h2>
                     <p class="lead text-slate-300 mb-4 opacity-75">
-                        Rejoignez les commerces et PME qui font confiance à STOCKBOX pour fiabiliser leurs mouvements, éliminer les ruptures et prendre de meilleures décisions.
+                        Rejoignez les commerces et PME qui font confiance à StockGX pour fiabiliser leurs mouvements, éliminer les ruptures et prendre de meilleures décisions.
                     </p>
                     <div class="d-flex flex-wrap justify-content-center gap-3 final-cta-group">
                         <form action="{{ route('demo.login') }}" method="POST" class="m-0">
                             @csrf
                             <button type="submit" class="btn-sb-primary" style="padding: 0.85rem 1.85rem; font-size: 1.05rem;">
-                                <span>Commencer gratuitement</span>
+                                <span>Test Demo</span>
                                 <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
                             </button>
                         </form>
@@ -2762,16 +2787,16 @@
     </section>
 
     {{-- 11. PIED DE PAGE (FOOTER 4 COLONNES) --}}
-    <footer class="footer-stockbox">
+    <footer class="footer-stockgx">
         <div class="container">
             <div class="row g-4 mb-5">
                 <!-- Col 1 : Marque & Statut -->
                 <div class="col-lg-4 col-md-6">
                     <div class="d-flex align-items-center gap-2 mb-3">
-                        <div class="d-flex align-items-center justify-content-center bg-primary text-white rounded-2 p-1" style="width: 32px; height: 32px; background-color: var(--sb-blue) !important;">
-                            <i data-lucide="package" style="width: 18px; height: 18px;"></i>
+                        <div class="d-flex align-items-center justify-content-center p-1 rounded-2" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.16);">
+                            <img src="{{ url('assets/images/logo-sm.png') }}" alt="StockGX" style="height: 32px; width: 32px; object-fit: contain;">
                         </div>
-                        <span class="fw-bold fs-4 text-white">STOCK<span style="color: var(--sb-blue-light);">BOX</span></span>
+                        <span class="fw-bold fs-4 text-white tracking-tight">Stock<span style="color: var(--sb-accent);">GX</span></span>
                     </div>
                     <p class="text-slate-400 small mb-3">
                         La plateforme SaaS moderne et intuitive pour centraliser vos produits, automatiser vos alertes de stock et piloter vos approvisionnements en temps réel.
@@ -2827,7 +2852,7 @@
             <!-- Copyright dynamique -->
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 small text-slate-500">
                 <div>
-                    &copy; {{ date('Y') }} STOCKBOX SaaS. Tous droits réservés.
+                    &copy; {{ date('Y') }} StockGX SaaS. Tous droits réservés.
                 </div>
                 <div class="d-flex gap-3">
                    
