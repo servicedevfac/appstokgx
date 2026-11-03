@@ -5,24 +5,12 @@
     <div class="col-12">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
             <div>
-                <h3 class="page-title mb-1 fw-bold">
-                    <i class="fas fa-crown text-warning me-2"></i> Console de Pilotage SaaS Global — GESTOCK / STOKGX
-                </h3>
+
                 <p class="text-muted mb-0">
                     Supervision globale des propriétaires, des entreprises clientes et des abonnements SaaS.
                 </p>
             </div>
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ route('superadmin.entreprises.index') }}" class="btn btn-primary">
-                    <i class="fas fa-building me-1"></i> Gérer les Entreprises
-                </a>
-                <a href="{{ route('superadmin.proprietaires.index') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-user-tie me-1"></i> Gérer les Propriétaires
-                </a>
-                <a href="{{ route('superadmin.abonnements.index') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-credit-card me-1"></i> Gérer les Abonnements
-                </a>
-            </div>
+       
         </div>
 
         {{-- KPI Plateforme SaaS --}}

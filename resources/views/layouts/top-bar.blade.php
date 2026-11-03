@@ -20,12 +20,7 @@
             </div>
 
             @if($isPureSuperAdmin)
-                <div class="d-none d-sm-flex align-items-center gap-2 ms-2">
-                    <span class="badge bg-warning text-dark px-3 py-2 d-flex align-items-center gap-2 fw-bold">
-                        <i class="fas fa-crown"></i>
-                        <span>CONSOLE D'ADMINISTRATION SAAS GLOBALE</span>
-                    </span>
-                </div>
+                
             @elseif($entrepriseActive)
                 <div class="d-none d-sm-flex align-items-center gap-2 ms-2">
                     <span class="badge bg-light text-dark px-3 py-2 d-flex align-items-center gap-2">
@@ -75,7 +70,6 @@
                         {{ Auth::user()->nom }}
                         <small class="d-block opacity-75" style="font-size: 10px;">{{ Auth::user()->role_libelle }}</small>
                     </span>
-                    <i class="mdi mdi-chevron-down ms-1 text-white"></i>
                 </a>
 
                 <ul class="dropdown-menu dropdown-menu-end profile-dropdown" aria-labelledby="userDropdown">
