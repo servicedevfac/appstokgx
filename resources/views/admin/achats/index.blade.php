@@ -35,7 +35,7 @@
                                 <tr>
                                     <td><strong>{{ $achat->numero_achat }}</strong></td>
                                     <td>{{ $achat->fournisseur?->nom }}</td>
-                                    <td>{{ $achat->date_achat?->format('d/m/Y') }}</td>
+                                    <td>{{ $achat->date_achat ? \Carbon\Carbon::parse($achat->date_achat)->format('d/m/Y') : '-' }}</td>
                                     <td>{{ number_format($achat->montant_total, 0, ',', ' ') }} FCFA</td>
                                     <td>{{ number_format($achat->montant_paye, 0, ',', ' ') }} FCFA</td>
                                     <td class="fw-bold {{ $achat->reste_a_payer > 0 ? 'text-danger' : 'text-success' }}">

@@ -6,7 +6,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h3 class="page-title fw-bold mb-1">Achat {{ $achat->numero_achat }}</h3>
-                <p class="text-muted mb-0">Fournisseur : <strong>{{ $achat->fournisseur?->nom }}</strong> | Date : {{ $achat->date_achat?->format('d/m/Y') }}</p>
+                <p class="text-muted mb-0">Fournisseur : <strong>{{ $achat->fournisseur?->nom }}</strong> | Date : {{ $achat->date_achat ? \Carbon\Carbon::parse($achat->date_achat)->format('d/m/Y') : '-' }}</p>
             </div>
             <div>
                 @if($achat->statut_reception !== 'recu')
@@ -86,7 +86,7 @@
                                 @forelse($achat->paiements as $p)
                                     <tr>
                                         <td>{{ $p->reference }}</td>
-                                        <td>{{ $p->date_paiement?->format('d/m/Y') }}</td>
+                                        <td>{{ $p->date_paiement ? \Carbon\Carbon::parse($p->date_paiement)->format('d/m/Y') : '-' }}</td>
                                         <td>{{ ucfirst($p->mode_paiement) }}</td>
                                         <td class="fw-bold text-success">{{ number_format($p->montant, 0, ',', ' ') }} FCFA</td>
                                     </tr>

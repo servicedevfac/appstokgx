@@ -25,6 +25,12 @@ class PaiementFournisseur extends Model
         'notes',
     ];
 
+    protected $casts = [
+        'date_paiement' => 'date',
+        'montant'       => 'decimal:2',
+        'reste_a_payer' => 'decimal:2',
+    ];
+
     public function achat()
     {
         return $this->belongsTo(Achat::class, 'achat_id');

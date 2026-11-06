@@ -27,9 +27,12 @@ class Achat extends Model
     ];
 
     protected $casts = [
-        'montant_total' => 'decimal:2',
-        'montant_paye'  => 'decimal:2',
-        'reste_a_payer' => 'decimal:2',
+        'date_achat'     => 'date',
+        'date_echeance'  => 'date',
+        'date_reception' => 'date',
+        'montant_total'  => 'decimal:2',
+        'montant_paye'   => 'decimal:2',
+        'reste_a_payer'  => 'decimal:2',
     ];
 
     public function fournisseur()
