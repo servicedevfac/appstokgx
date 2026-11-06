@@ -370,7 +370,7 @@ class VenteController extends Controller
             // Génération du reçu PDF (tolérante en environnement de test minimal)
             $filename = 'recu_vente_' . ($vente->client->nom ?? 'client') . '_' . $vente->code_recu . '.pdf';
             try {
-                $vente->load(['client', 'user', 'details.produit']);
+                $vente->load(['client', 'user', 'details.produit', 'entreprise']);
                 $pdf = Pdf::loadView('admin.ventes.recu_pdf', ['vente' => $vente]);
                 Storage::put('public/recus/' . $filename, $pdf->output());
                 $vente->update(['pdf_recu' => 'recus/' . $filename]);
@@ -675,7 +675,7 @@ class VenteController extends Controller
     public function imprimerTicket($id)
     {
         $this->checkPermission('view');
-        $vente = Vente::withoutGlobalScope('entreprise')->with(['client', 'details.produit', 'user'])->findOrFail($id);
+        $vente = Vente::withoutGlobalScope('entreprise')->with(['client', 'details.produit', 'user', 'entreprise'])->findOrFail($id);
         $this->ensureSameEntreprise($vente);
 
         $pdf = PDF::loadView('admin.ventes.recu_ticket', compact('vente'));

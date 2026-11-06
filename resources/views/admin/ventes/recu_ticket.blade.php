@@ -68,14 +68,49 @@
     </style>
 </head>
 <body>
-    
-    <div class="header">
-    <img 
-    src="{{ public_path('assets/images/logo-dark.png') }}"
-    style="width:120px; display:block; margin:auto;"
->
+    @php
+        $entreprise = $vente->entreprise ?? null;
+        $logoBase64 = null;
+        $logoFile = null;
+        if ($entreprise && $entreprise->logo && file_exists(public_path($entreprise->logo))) {
+            $logoFile = public_path($entreprise->logo);
+        } elseif (file_exists(public_path('assets/images/logo-dark.png'))) {
+            $logoFile = public_path('assets/images/logo-dark.png');
+        }
 
-        <p>San Pedro - 07 99 28 82 54</p>
+        if ($logoFile && is_readable($logoFile)) {
+            $ext = strtolower(pathinfo($logoFile, PATHINFO_EXTENSION));
+            $mime = match($ext) {
+                'jpg', 'jpeg' => 'image/jpeg',
+                'png'         => 'image/png',
+                'webp'        => 'image/webp',
+                'gif'         => 'image/gif',
+                default       => 'image/png',
+            };
+            $data = @file_get_contents($logoFile);
+            if ($data !== false) {
+                $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode($data);
+            }
+        }
+    @endphp
+
+    <div class="header">
+        @if($logoBase64)
+            <img src="{{ $logoBase64 }}" style="max-width: 140px; max-height: 65px; display: block; margin: 0 auto 6px auto; object-fit: contain;" alt="Logo">
+        @endif
+
+        <h3 style="margin: 2px 0; font-size: 14px; font-weight: bold;">{{ $entreprise?->nom ?? config('app.name', 'STOKGX') }}</h3>
+        @if($entreprise?->adresse || $entreprise?->telephone)
+            <p style="margin: 2px 0; font-size: 11px;">
+                {{ implode(' - ', array_filter([$entreprise?->adresse, $entreprise?->telephone])) }}
+            </p>
+        @endif
+        @if($entreprise?->email)
+            <p style="margin: 2px 0; font-size: 10px;">{{ $entreprise->email }}</p>
+        @endif
+        @if($entreprise?->identifiant_fiscal)
+            <p style="margin: 2px 0; font-size: 10px;">N° CC/IF : {{ $entreprise->identifiant_fiscal }}</p>
+        @endif
         <hr>
     </div>
 

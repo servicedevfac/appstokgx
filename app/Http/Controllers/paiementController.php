@@ -22,7 +22,7 @@ class paiementController extends Controller
     public function ticketpaiement($id)
     {
         $user = Auth::user();
-        $paiement = Paiement::withoutGlobalScope('entreprise')->with('vente')->findOrFail($id);
+        $paiement = Paiement::withoutGlobalScope('entreprise')->with(['vente.entreprise', 'entreprise'])->findOrFail($id);
 
         $entrepriseId = $paiement->entreprise_id ?? $paiement->vente?->entreprise_id;
         if (! $user->canAccessEntreprise((int) $entrepriseId)) {
