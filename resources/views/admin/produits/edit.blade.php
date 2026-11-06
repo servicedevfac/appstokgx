@@ -46,7 +46,19 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="prix" class="form-label">Prix (FCFA) <span class="text-danger">*</span></label>
+                            <label for="prix_achat" class="form-label">Prix d'achat (FCFA)</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" min="0" class="form-control @error('prix_achat') is-invalid @enderror" id="prix_achat" name="prix_achat" value="{{ old('prix_achat', $produit->prix_achat) }}" placeholder="Ex: 3500">
+                                <span class="input-group-text">FCFA</span>
+                                @error('prix_achat')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <small class="text-muted">Coût d'achat servant à estimer la marge et le bénéfice net.</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="prix" class="form-label">Prix de vente (FCFA) <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="number" step="0.01" min="0" class="form-control @error('prix') is-invalid @enderror" id="prix" name="prix" value="{{ old('prix', $produit->prix) }}" placeholder="Ex: 5000" required>
                                 <span class="input-group-text">FCFA</span>
@@ -68,6 +80,23 @@
                             @enderror
                             <small class="text-muted">Alerte déclenchée lorsque le stock atteint ce niveau minimum.</small>
                         </div>
+
+                        @if(isset($categories) && $categories->count() > 0)
+                        <div class="col-md-6">
+                            <label for="categorie_id" class="form-label">Catégorie</label>
+                            <select class="form-select @error('categorie_id') is-invalid @enderror" id="categorie_id" name="categorie_id">
+                                <option value="">-- Aucune catégorie --</option>
+                                @foreach($categories as $cat)
+                                    <option value="{{ $cat->id }}" {{ old('categorie_id', $produit->categorie_id) == $cat->id ? 'selected' : '' }}>
+                                        {{ $cat->nom }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('categorie_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        @endif
                     </div>
 
                     <div class="d-flex align-items-center justify-content-end gap-2 mt-4 pt-3 border-top">

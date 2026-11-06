@@ -16,8 +16,21 @@
                     <dt class="col-sm-3">Nom</dt>
                     <dd class="col-sm-9">{{ $produit->nom }}</dd>
 
-                    <dt class="col-sm-3">Prix</dt>
-                    <dd class="col-sm-9">{{ $produit->prix }}</dd>
+                    @if($produit->reference)
+                        <dt class="col-sm-3">Référence</dt>
+                        <dd class="col-sm-9"><code>{{ $produit->reference }}</code></dd>
+                    @endif
+
+                    @if($produit->categorie)
+                        <dt class="col-sm-3">Catégorie</dt>
+                        <dd class="col-sm-9">{{ $produit->categorie->nom }}</dd>
+                    @endif
+
+                    <dt class="col-sm-3">Prix d'achat</dt>
+                    <dd class="col-sm-9 text-secondary fw-semibold">{{ number_format($produit->prix_achat ?? 0, 0, ',', ' ') }} FCFA</dd>
+
+                    <dt class="col-sm-3">Prix de vente</dt>
+                    <dd class="col-sm-9 text-primary fw-bold">{{ number_format($produit->prix, 0, ',', ' ') }} FCFA</dd>
 
                     <dt class="col-sm-3">Seuil d'alerte</dt>
                     <dd class="col-sm-9">{{ $produit->seuil_alerte }}</dd>

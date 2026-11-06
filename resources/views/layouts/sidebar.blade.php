@@ -1,4 +1,4 @@
-        <div class="main-menu" id="mainMenuSidebar">
+        <div class="main-menu" id="mainMenuSidebar" >
             <!-- Brand Logo -->
             <div class="logo-box text-center position-relative" style="padding: 24px 0; height: auto;">
                 <button type="button" class="btn-close-sidebar d-lg-none" id="sidebarCloseBtn" aria-label="Fermer le menu">
@@ -19,7 +19,7 @@
             <!--- Menu -->
             <div data-simplebar>
                 @auth
-                <ul class="app-menu">
+                <ul class="app-menu" style="margin-bottom: 50px;">
                     @if(Auth::user()->isSuperAdmin() && !Auth::user()->isProprietaire())
                         {{-- ==========================================================
                              MENU EXCLUSIF SUPER ADMINISTRATEUR (PILOTAGE SAAS GLOBAL)

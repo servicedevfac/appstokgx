@@ -59,8 +59,10 @@
 </head>
 <body>
     <div class="layout-wrapper">
+        <div >
         @include('layouts.sidebar')
-        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div></div>
+        
 
         <div class="page-content">
             @include('layouts.top-bar')

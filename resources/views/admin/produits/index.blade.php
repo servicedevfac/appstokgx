@@ -31,7 +31,8 @@
                                 <th>Total Entrées</th>
                                 <th>Total Sorties</th>
                                 <th>Stock Actuel</th>
-                                <th>Prix (CFA)</th>
+                                <th>Prix Achat</th>
+                                <th>Prix Vente</th>
                                 <th>Seuil d'alerte</th>
                                 <th>Date</th>
                                 <th>Action</th>
@@ -48,7 +49,8 @@
                                     <td>{{ $produit->mouvements->where('type_mouvement', 'entree')->sum('quantite') }}</td>
                                     <td>{{ $produit->mouvements->where('type_mouvement', 'sortie')->sum('quantite') }}</td>
                                     <td>{{ $produit->stock_actuel }}</td>
-                                    <td>{{ $produit->prix }} CFA</td>
+                                    <td>{{ number_format($produit->prix_achat ?? 0, 0, ',', ' ') }} CFA</td>
+                                    <td>{{ number_format($produit->prix, 0, ',', ' ') }} CFA</td>
                                     <td>
                                         <span class="badge bg-warning text-dark">{{ $produit->seuil_alerte }}</span>
                                     </td>
@@ -82,7 +84,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="table-empty-state">
+                                    <td colspan="10" class="table-empty-state">
                                         <i class="fas fa-boxes"></i>
                                         <h5 class="empty-title">Aucun produit trouvé</h5>
                                         <p class="empty-desc">Aucun produit n'est actuellement enregistré dans le catalogue.</p>

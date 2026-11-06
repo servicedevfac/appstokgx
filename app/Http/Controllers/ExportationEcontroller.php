@@ -136,7 +136,7 @@ class ExportationEcontroller extends Controller
         abort_unless(Auth::user()->can('exporter produit') || Auth::user()->can('afficher produits'), 403);
 
         $products = Produit::with('mouvements')->orderBy('nom')->get();
-        $headers = ['Nom', 'Prix', 'Stock actuel', 'Seuil alerte'];
+        $headers = ['Nom', 'Prix Achat', 'Prix Vente', 'Stock actuel', 'Seuil alerte'];
 
         if ($format === 'excel') {
             return $this->generateProductExcel($products, $headers, 'produits_' . now()->format('Ymd_His') . '.xlsx');
@@ -164,17 +164,18 @@ class ExportationEcontroller extends Controller
             'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '02228b']],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
         ];
-        $sheet->getStyle('A1:D1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
 
         $rowIndex = 2;
         foreach ($products as $product) {
             $sheet->setCellValue("A{$rowIndex}", $product->nom);
-            $sheet->setCellValue("B{$rowIndex}", $product->prix);
-            $sheet->setCellValue("C{$rowIndex}", $product->stock_actuel);
-            $sheet->setCellValue("D{$rowIndex}", $product->seuil_alerte);
+            $sheet->setCellValue("B{$rowIndex}", $product->prix_achat ?? 0);
+            $sheet->setCellValue("C{$rowIndex}", $product->prix);
+            $sheet->setCellValue("D{$rowIndex}", $product->stock_actuel);
+            $sheet->setCellValue("E{$rowIndex}", $product->seuil_alerte);
 
             if ($product->stock_actuel <= $product->seuil_alerte) {
-                $sheet->getStyle("C{$rowIndex}:D{$rowIndex}")->applyFromArray([
+                $sheet->getStyle("D{$rowIndex}:E{$rowIndex}")->applyFromArray([
                     'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => 'FFB6C1']],
                 ]);
             }
@@ -182,9 +183,9 @@ class ExportationEcontroller extends Controller
             $rowIndex++;
         }
 
-        $sheet->getStyle("A1:D" . max(1, $rowIndex - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle("A1:E" . max(1, $rowIndex - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
-        foreach (range('A', 'D') as $col) {
+        foreach (range('A', 'E') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
@@ -221,6 +222,7 @@ class ExportationEcontroller extends Controller
 
             $html .= '<tr>';
             $html .= "<td>" . e($product->nom) . "</td>";
+            $html .= "<td>" . number_format($product->prix_achat ?? 0, 0, ',', ' ') . " FCFA</td>";
             $html .= "<td>" . number_format($product->prix, 0, ',', ' ') . " FCFA</td>";
             $html .= "<td {$lowStockClass}>{$product->stock_actuel}</td>";
             $html .= "<td>{$product->seuil_alerte}</td>";

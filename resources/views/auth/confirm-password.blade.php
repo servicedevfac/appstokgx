@@ -120,6 +120,11 @@
       margin-bottom: 20px;
     }
 
+    .input-group-modern .input-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
     .input-group-modern .input-icon {
       position: absolute;
       left: 16px;
@@ -129,6 +134,7 @@
       font-size: 15px;
       z-index: 2;
       transition: color .25s ease;
+      pointer-events: none;
     }
 
     .input-group-modern input {
@@ -155,7 +161,8 @@
       box-shadow: 0 0 0 3px rgba(249,168,37,.1);
     }
 
-    .input-group-modern input:focus ~ .input-icon {
+    .input-group-modern input:focus ~ .input-icon,
+    .input-group-modern .input-wrapper:focus-within .input-icon {
       color: #fbc02d;
     }
 
@@ -233,16 +240,18 @@
 
         <!-- Password -->
         <div class="input-group-modern">
-          <i class="fas fa-lock input-icon"></i>
-          <input
-            type="password"
-            name="password"
-            placeholder="Mot de passe"
-            class="@error('password') is-invalid @enderror"
-            required
-            autocomplete="current-password"
-            autofocus
-          >
+          <div class="input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input
+              type="password"
+              name="password"
+              placeholder="Mot de passe"
+              class="@error('password') is-invalid @enderror"
+              required
+              autocomplete="current-password"
+              autofocus
+            >
+          </div>
           @error('password')
             <div class="invalid-feedback d-block">{{ $message }}</div>
           @enderror
