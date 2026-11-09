@@ -139,7 +139,13 @@
             @else style="background-color:#e2e3e5 ;"
             @endif>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{ $vente->client->nom }} {{ $vente->client->prenom }}</td>
+                <td>
+                    @if($vente->client)
+                        {{ $vente->client->nom }} {{ $vente->client->prenom }}
+                    @else
+                        <span class="text-muted fst-italic">Client comptoir</span>
+                    @endif
+                </td>
                 <td>{{ $vente->created_at }}</td>
                 <td>{{ number_format($vente->montant_total, 0, ',', ' ') }} FCFA</td>
                 <td>{{ $vente->mode_paiement }}</td>
@@ -154,7 +160,12 @@
                  <td>{{ $vente->date_vente}}</td>
                 <td style="display:flex;flex-direction:row;justify-content:center; gap: 5px; ">
                     @if($vente->code_recu)
-                        <a href="{{ asset('storage/recus/recu_vente_'.$vente->client->nom.'_'.$vente->code_recu.'.pdf') }}" class="btn btn-header1 btn-lg" target="_blank"><i class="fas fa-file-pdf"></i></a>
+                        @php
+                            $pdfUrl = $vente->pdf_recu 
+                                ? asset('storage/' . $vente->pdf_recu) 
+                                : asset('storage/recus/recu_vente_' . ($vente->client?->nom ?? 'client') . '_' . $vente->code_recu . '.pdf');
+                        @endphp
+                        <a href="{{ $pdfUrl }}" class="btn btn-header1 btn-lg" target="_blank"><i class="fas fa-file-pdf"></i></a>
                     @else
                         <span class="text-muted">Pas de reçu</span>
                     @endif

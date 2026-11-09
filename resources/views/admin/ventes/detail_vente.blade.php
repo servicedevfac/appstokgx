@@ -13,7 +13,7 @@
             </div>
             <div class="card-body">
                 <p><strong>Code reçu :</strong> {{ $vente->code_recu }}</p>
-                <p><strong>Client :</strong> {{ $vente->client->nom ?? '-' }} {{ $vente->client->prenom }}</p>
+                <p><strong>Client :</strong> {{ $vente->client ? ($vente->client->nom . ' ' . ($vente->client->prenom ?? '')) : 'Client comptoir (Non spécifié)' }}</p>
                 <p><strong>Utilisateur :</strong> {{ $vente->user->nom ?? '-' }}</p>
                 <p><strong>Date :</strong> {{ $vente->created_at ? $vente->created_at->format('d/m/Y H:i') : '-' }}</p>
                 <p><strong>Total :</strong> {{ number_format($vente->montant_total, 0, ',', ' ') }} FCFA</p>

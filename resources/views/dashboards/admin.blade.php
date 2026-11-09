@@ -353,13 +353,13 @@
                                 @forelse ($derniersClients as $derniersClient)
                                     <tr>
                                         <td class="table-user fw-semibold">
-                                            {{ $derniersClient->client->nom }}
+                                            {{ $derniersClient->client?->nom ?? 'Client comptoir' }}
                                         </td>
                                         <td>
-                                            {{ $derniersClient->client->telephone }}
+                                            {{ $derniersClient->client?->telephone ?? '-' }}
                                         </td>
                                         <td>
-                                            {{ $derniersClient->client->adresse }}
+                                            {{ $derniersClient->client?->adresse ?? '-' }}
                                         </td>
                                     </tr>
                                 @empty
@@ -397,7 +397,7 @@
                             <tbody>
                                 @forelse ($derniersVentes as $vente)
                                     <tr>
-                                        <td class="fw-semibold">{{ $vente->client->nom }}</td>
+                                        <td class="fw-semibold">{{ $vente->client?->nom ?? 'Client comptoir' }}</td>
                                         <td>{{ $vente->date_vente }}</td>
                                         <td><strong>{{ number_format($vente->montant_total, 0, ',', ' ') }} XOF</strong></td>
                                     </tr>

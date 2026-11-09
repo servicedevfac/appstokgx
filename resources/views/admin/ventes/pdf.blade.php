@@ -109,7 +109,7 @@
         @foreach($ventes as $vente)
             <tr>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{ $vente->client->nom }} {{ $vente->client->prenom }}</td>
+                <td>{{ $vente->client ? ($vente->client->nom . ' ' . ($vente->client->prenom ?? '')) : 'Client comptoir' }}</td>
                 <td>{{ $vente->updated_at }}</td>
                 <td>{{ number_format($vente->montant_total, 0, ',', ' ') }} FCFA</td>
                 <td>{{ $vente->mode_paiement }}</td>

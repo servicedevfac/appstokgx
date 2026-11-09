@@ -48,9 +48,15 @@
 
                     {{-- Client --}}
                     <div class="mb-4">
-                        <label for="client_id" class="form-label">Client <span class="text-danger">*</span></label>
-                        <select id="client-select" name="client_id" class="form-control @error('client_id') is-invalid @enderror" required style="width: 100%;">
-                            <!-- AJAX rempli par Select2 -->
+                        <label for="client_id" class="form-label">Client <small class="text-muted">(Optionnel - obligatoire si vente à crédit)</small></label>
+                        <select id="client-select" name="client_id" class="form-control @error('client_id') is-invalid @enderror" style="width: 100%;">
+                            <option value="">-- Client comptoir (Aucun) --</option>
+                            @if(old('client_id'))
+                                @php $oldClient = \App\Models\Client::find(old('client_id')); @endphp
+                                @if($oldClient)
+                                    <option value="{{ $oldClient->id }}" selected>{{ $oldClient->nom }} {{ $oldClient->prenom }} {{ $oldClient->telephone }}</option>
+                                @endif
+                            @endif
                         </select>
                         @error('client_id')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -283,7 +289,8 @@ document.getElementById('remise').addEventListener('input', recalculerTotals);
 
 // --- Select2 client ---
 $('#client-select').select2({
-    placeholder: 'Rechercher un client...',
+    placeholder: 'Rechercher un client (optionnel)...',
+    allowClear: true,
     ajax: {
         url: '{{ route("clients.search") }}',
         dataType: 'json',

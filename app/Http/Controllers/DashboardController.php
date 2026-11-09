@@ -199,6 +199,7 @@ class DashboardController extends Controller
         $derniersClients = Vente::withoutGlobalScope('entreprise')
             ->with('client')
             ->whereIn('entreprise_id', $targetEntrepriseIds)
+            ->whereNotNull('client_id')
             ->select('client_id')
             ->groupBy('client_id')
             ->orderByRaw('MAX(date_vente) DESC')
@@ -375,6 +376,7 @@ class DashboardController extends Controller
 
         $derniersClients = Vente::with('client')
             ->where('user_id', $userId)
+            ->whereNotNull('client_id')
             ->select('client_id')
             ->groupBy('client_id')
             ->orderByRaw('MAX(date_vente) DESC')

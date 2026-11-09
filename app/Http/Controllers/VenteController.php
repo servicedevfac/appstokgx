@@ -136,7 +136,7 @@ class VenteController extends Controller
         $this->checkPermission('create');
 
         $validated = $request->validate([
-            'client_id'             => 'required|integer|exists:clients,id',
+            'client_id'             => 'nullable|integer|exists:clients,id',
             'montant_paye'          => 'nullable|numeric|min:0',
             'remise'                => 'nullable|numeric|min:0',
             'date_vente'            => 'required|date',
@@ -147,7 +147,6 @@ class VenteController extends Controller
             'produits.*.produit_id' => 'required|integer|exists:produits,id',
             'produits.*.quantite'   => 'required|integer|min:1',
         ], [
-            'client_id.required'             => 'Veuillez sélectionner un client.',
             'client_id.exists'               => 'Le client sélectionné n\'existe pas.',
             'date_vente.required'            => 'La date de la vente est obligatoire.',
             'mode_paiement.required'         => 'Veuillez sélectionner un mode de paiement.',
@@ -171,12 +170,15 @@ class VenteController extends Controller
             }
         }
 
-        // Vérifier que le client appartient bien à l'entreprise active
-        $client = Client::withoutGlobalScope('entreprise')->findOrFail($validated['client_id']);
-        if ($entrepriseId && (int) $client->entreprise_id !== (int) $entrepriseId) {
-            abort(403, 'Le client sélectionné n\'appartient pas à votre entreprise.');
+        // Vérifier que le client appartient bien à l'entreprise active s'il est renseigné
+        $client = null;
+        if (! empty($validated['client_id'])) {
+            $client = Client::withoutGlobalScope('entreprise')->findOrFail($validated['client_id']);
+            if ($entrepriseId && (int) $client->entreprise_id !== (int) $entrepriseId) {
+                abort(403, 'Le client sélectionné n\'appartient pas à votre entreprise.');
+            }
+            $entrepriseId = $entrepriseId ?? $client->entreprise_id;
         }
-        $entrepriseId = $entrepriseId ?? $client->entreprise_id;
 
         DB::beginTransaction();
         try {
@@ -265,6 +267,14 @@ class VenteController extends Controller
             $estPaye = ($resteAPayer <= 0);
             $statutPaiement = $estPaye ? 'paye' : ($montantPaye > 0 ? 'partiel' : 'impaye');
 
+            if ($resteAPayer > 0 && ! $client) {
+                DB::rollBack();
+                return back()->withInput()->with(
+                    'error',
+                    'Veuillez sélectionner un client : un client est obligatoire pour une vente à crédit ou avec un reste à payer.'
+                );
+            }
+
             // Génération unique du code reçu par entreprise
             $annee = now()->format('Y');
             $mois = now()->format('m');
@@ -288,7 +298,7 @@ class VenteController extends Controller
 
             $vente = Vente::create([
                 'entreprise_id'   => $entrepriseId,
-                'client_id'       => $client->id,
+                'client_id'       => $client?->id,
                 'user_id'         => Auth::id(),
                 'date_vente'      => $validated['date_vente'],
                 'date_echeance'   => $validated['date_echeance'] ?? null,
@@ -368,7 +378,7 @@ class VenteController extends Controller
             );
 
             // Génération du reçu PDF (tolérante en environnement de test minimal)
-            $filename = 'recu_vente_' . ($vente->client->nom ?? 'client') . '_' . $vente->code_recu . '.pdf';
+            $filename = 'recu_vente_' . ($vente->client?->nom ?? 'client') . '_' . $vente->code_recu . '.pdf';
             try {
                 $vente->load(['client', 'user', 'details.produit', 'entreprise']);
                 $pdf = Pdf::loadView('admin.ventes.recu_pdf', ['vente' => $vente]);
@@ -420,16 +430,20 @@ class VenteController extends Controller
         $this->ensureSameEntreprise($vente);
 
         $validated = $request->validate([
-            'client_id'     => 'required|exists:clients,id',
+            'client_id'     => 'nullable|exists:clients,id',
             'date_vente'    => 'required|date',
             'date_echeance' => 'nullable|date|after_or_equal:date_vente',
             'mode_paiement' => 'required|string|max:50',
         ]);
 
-        $client = Client::findOrFail($validated['client_id']);
+        $client = ! empty($validated['client_id']) ? Client::findOrFail($validated['client_id']) : null;
+
+        if ($vente->reste_a_payer > 0 && ! $client) {
+            return back()->withInput()->with('error', 'Un client est obligatoire pour une vente comportant un reste à payer.');
+        }
 
         $vente->update([
-            'client_id'     => $client->id,
+            'client_id'     => $client?->id,
             'date_vente'    => $validated['date_vente'],
             'date_echeance' => $validated['date_echeance'] ?? $vente->date_echeance,
             'mode_paiement' => $validated['mode_paiement'],

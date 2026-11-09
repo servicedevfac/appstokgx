@@ -269,7 +269,7 @@
                                 @forelse ($ventes as $vente)
                                     <tr>
                                         <td class="fw-semibold">{{ $vente->code_recu }}</td>
-                                        <td>{{ $vente->client->nom }}</td>
+                                        <td>{{ $vente->client?->nom ?? 'Client comptoir' }}</td>
                                         <td>{{ $vente->mode_paiement }}</td>
                                         <td>{{ $vente->date_vente }}</td>
                                     </tr>
@@ -308,9 +308,9 @@
                             <tbody>
                                 @forelse ($derniersClients as $client)
                                     <tr>
-                                        <td class="fw-semibold">{{ $client->client->nom }}</td>
-                                        <td>{{ $client->client->adresse }}</td>
-                                        <td>{{ $client->client->telephone }}</td>
+                                        <td class="fw-semibold">{{ $client->client?->nom ?? 'Client comptoir' }}</td>
+                                        <td>{{ $client->client?->adresse ?? '-' }}</td>
+                                        <td>{{ $client->client?->telephone ?? '-' }}</td>
                                     </tr>
                                 @empty
                                     <tr>
