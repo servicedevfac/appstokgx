@@ -477,6 +477,10 @@
             border: 1px solid var(--sb-border);
             border-radius: 0.85rem;
             padding: 1rem 1.15rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
                         box-shadow 0.25s ease, 
                         border-color 0.25s ease;
@@ -485,6 +489,21 @@
             transform: translateY(-3px);
             box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
             border-color: #cbd5e1;
+        }
+        .dashboard-kpi-card .kpi-value-box {
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+            min-height: 1.8rem;
+        }
+        .dashboard-kpi-card .kpi-unit {
+            display: inline;
+        }
+        .count-up-trigger {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum";
+            white-space: nowrap;
+            display: inline-block;
         }
 
         /* Cartes flottantes extérieures */
@@ -1137,11 +1156,31 @@
                 padding: 0.85rem !important;
             }
             .dashboard-kpi-card {
-                padding: 0.65rem 0.5rem;
+                padding: 0.6rem 0.45rem;
                 border-radius: 0.65rem;
+                min-height: 96px;
+            }
+            .dashboard-kpi-card .kpi-title {
+                min-height: 2.1em;
+                line-height: 1.15;
+            }
+            .dashboard-kpi-card .kpi-value-box {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0;
+                min-height: 2.3em;
+                justify-content: center;
+                line-height: 1.15;
+            }
+            .dashboard-kpi-card .kpi-unit {
+                display: block;
+                font-size: 0.65rem !important;
+                line-height: 1;
+                margin-top: 1px;
             }
             .dashboard-kpi-card .fs-6 {
                 font-size: 0.82rem !important;
+                line-height: 1.15;
             }
             .dashboard-kpi-card .text-muted {
                 font-size: 0.68rem !important;
@@ -1529,13 +1568,13 @@
                             <!-- Corps du Dashboard Réaliste -->
                             <div class="p-3 p-sm-4 bg-white">
                                 <!-- 3 Cartes KPIs Principales avec Compteurs Numériques Vivants -->
-                                <div class="row g-3 mb-3">
+                                <div class="row g-2 g-sm-3 mb-3">
                                     <div class="col-4">
                                         <div class="dashboard-kpi-card">
-                                            <div class="text-muted" style="font-size: 0.75rem; font-weight: 500;">Valeur du stock</div>
-                                            <div class="fw-bold fs-6 mt-1 text-dark">
+                                            <div class="text-muted kpi-title" style="font-size: 0.75rem; font-weight: 500;">Valeur du stock</div>
+                                            <div class="fw-bold fs-6 mt-1 text-dark kpi-value-box">
                                                 <span class="count-up-trigger" data-target="18450000" data-currency="true">18 450 000</span>
-                                                <span style="font-size: 0.7rem;">FCFA</span>
+                                                <span class="kpi-unit" style="font-size: 0.7rem;">FCFA</span>
                                             </div>
                                             <div class="text-success small fw-semibold mt-1" style="font-size: 0.72rem;">
                                                 <i data-lucide="trending-up" style="width: 12px; height: 12px;" class="d-inline"></i> +8.2%
@@ -1544,10 +1583,10 @@
                                     </div>
                                     <div class="col-4">
                                         <div class="dashboard-kpi-card">
-                                            <div class="text-muted" style="font-size: 0.75rem; font-weight: 500;">Produits en stock</div>
-                                            <div class="fw-bold fs-6 mt-1 text-dark">
+                                            <div class="text-muted kpi-title" style="font-size: 0.75rem; font-weight: 500;">Produits en stock</div>
+                                            <div class="fw-bold fs-6 mt-1 text-dark kpi-value-box">
                                                 <span class="count-up-trigger" data-target="428">428</span>
-                                                <span style="font-size: 0.7rem; font-weight: 400;" class="text-muted">réf.</span>
+                                                <span class="kpi-unit" style="font-size: 0.7rem; font-weight: 400;" class="text-muted">réf.</span>
                                             </div>
                                             <div class="text-primary small fw-semibold mt-1" style="font-size: 0.72rem;">
                                                 14 catégories
@@ -1556,10 +1595,10 @@
                                     </div>
                                     <div class="col-4">
                                         <div class="dashboard-kpi-card" style="border-left: 3px solid var(--sb-orange);">
-                                            <div class="text-muted" style="font-size: 0.75rem; font-weight: 500;">Alertes de stock</div>
-                                            <div class="fw-bold fs-6 mt-1 text-warning" style="color: var(--sb-orange) !important;">
+                                            <div class="text-muted kpi-title" style="font-size: 0.75rem; font-weight: 500;">Alertes de stock</div>
+                                            <div class="fw-bold fs-6 mt-1 text-warning kpi-value-box" style="color: var(--sb-orange) !important;">
                                                 <span class="count-up-trigger" data-target="3">3</span>
-                                                <span style="font-size: 0.7rem; font-weight: 400;" class="text-muted">critiques</span>
+                                                <span class="kpi-unit" style="font-size: 0.7rem; font-weight: 400;" class="text-muted">critiques</span>
                                             </div>
                                             <div class="text-danger small fw-semibold mt-1" style="font-size: 0.72rem;">
                                                 À commander
@@ -1612,8 +1651,8 @@
                                         </div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="p-2 rounded-2 border bg-white text-center">
-                                            <div class="text-muted" style="font-size: 0.7rem;">Taux Disponibilité</div>
+                                        <div class="p-2 rounded-2 border bg-white text-center h-100 d-flex flex-column justify-content-center" style="min-height: 58px;">
+                                            <div class="text-muted" style="font-size: 0.7rem; line-height: 1.15; min-height: 1.6em;">Taux Disponibilité</div>
                                             <div class="fw-bold small text-success">
                                                 <span class="count-up-trigger" data-target="97.8" data-percent="true">97.8%</span>
                                             </div>
@@ -2916,6 +2955,18 @@
                 const duration = 1800;
                 const startTime = performance.now();
 
+                // Respect du mode réduction de mouvement
+                if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    if (isCurrency) {
+                        el.textContent = Math.round(target).toLocaleString('fr-FR').replace(/\s/g, '\u00A0');
+                    } else if (isPercent) {
+                        el.textContent = target.toFixed(1) + '%';
+                    } else {
+                        el.textContent = Math.round(target).toString();
+                    }
+                    return;
+                }
+
                 const updateCount = (currentTime) => {
                     const elapsed = currentTime - startTime;
                     const progress = Math.min(elapsed / duration, 1);
@@ -2923,7 +2974,7 @@
                     const current = progress === 1 ? target : (easeOut * target);
 
                     if (isCurrency) {
-                        el.textContent = Math.round(current).toLocaleString('fr-FR');
+                        el.textContent = Math.round(current).toLocaleString('fr-FR').replace(/\s/g, '\u00A0');
                     } else if (isPercent) {
                         el.textContent = current.toFixed(1) + '%';
                     } else {
