@@ -81,32 +81,15 @@
         </div>
     </div>
 
-    {{-- Stat cards --}}
+    {{-- Stat cards réorganisées selon les 8 indicateurs clés --}}
     <div class="row mt-3 gx-3 gy-3" id="indicator-cards-container">
-        {{-- Encaissé --}}
-        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-encaisse">
-            <div class="card modern-stat stat-blue h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="stat-label">Encaissé ({{ ucfirst($periodeTitle) }})</div>
-                            <div class="stat-value">{{ number_format($encaissePeriode, 0, ',', ' ') }} <small>XOF</small></div>
-                        </div>
-                        <div class="stat-icon">
-                            <i class="fas fa-coins"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Chiffre d'affaires --}}
+        {{-- 1. Chiffre d'affaires --}}
         <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-ca">
             <div class="card modern-stat stat-purple h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="stat-label">Chiffre d'affaires</div>
+                            <div class="stat-label">Chiffres d’affaires</div>
                             <div class="stat-value">{{ number_format($caPeriode, 0, ',', ' ') }} <small>XOF</small></div>
                         </div>
                         <div class="stat-icon">
@@ -117,30 +100,30 @@
             </div>
         </div>
 
-        {{-- Reste à payer --}}
-        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-reste-payer">
-            <div class="card modern-stat stat-red h-100">
+        {{-- 2. Montant encaissé --}}
+        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-encaisse">
+            <div class="card modern-stat stat-blue h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="stat-label">Reste à payer</div>
-                            <div class="stat-value">{{ number_format($resteAPayerPeriode, 0, ',', ' ') }} <small>XOF</small></div>
+                            <div class="stat-label">Montant encaissé</div>
+                            <div class="stat-value">{{ number_format($encaissePeriode, 0, ',', ' ') }} <small>XOF</small></div>
                         </div>
                         <div class="stat-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
+                            <i class="fas fa-coins"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Dépenses --}}
+        {{-- 3. Dépenses --}}
         <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-depenses">
             <div class="card modern-stat stat-gold h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="stat-label">Dépenses ({{ ucfirst($periodeTitle) }})</div>
+                            <div class="stat-label">Dépenses</div>
                             <div class="stat-value">{{ number_format($depensesPeriode, 0, ',', ' ') }} <small>XOF</small></div>
                         </div>
                         <div class="stat-icon">
@@ -151,13 +134,13 @@
             </div>
         </div>
 
-        {{-- Bénéfice Net --}}
+        {{-- 4. Bénéfices net --}}
         <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-benefice">
             <div class="card modern-stat {{ $beneficeNetPeriode >= 0 ? 'stat-teal' : 'stat-red' }} h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="stat-label">Bénéfice Net</div>
+                            <div class="stat-label">Bénéfices net</div>
                             <div class="stat-value">{{ number_format($beneficeNetPeriode, 0, ',', ' ') }} <small>XOF</small></div>
                         </div>
                         <div class="stat-icon">
@@ -168,49 +151,31 @@
             </div>
         </div>
 
-        {{-- Ventes réalisées --}}
-        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-nb-ventes">
-            <div class="card modern-stat stat-green h-100">
+        {{-- 5. Créances clients --}}
+        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-reste-payer">
+            <div class="card modern-stat stat-red h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="stat-label">Ventes réalisées</div>
-                            <div class="stat-value">{{ number_format($nbVentesPeriode, 0, ',', ' ') }} <small>vente(s)</small></div>
+                            <div class="stat-label">Créances clients</div>
+                            <div class="stat-value">{{ number_format($resteAPayerPeriode, 0, ',', ' ') }} <small>XOF</small></div>
                         </div>
                         <div class="stat-icon">
-                            <i class="fas fa-shopping-cart"></i>
+                            <i class="fas fa-hand-holding-usd"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Panier moyen --}}
-        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-panier-moyen">
-            <div class="card modern-stat stat-blue h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="stat-label">Panier moyen</div>
-                            <div class="stat-value">{{ number_format($panierMoyenPeriode, 0, ',', ' ') }} <small>XOF</small></div>
-                        </div>
-                        <div class="stat-icon">
-                            <i class="fas fa-receipt"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @if(isset($indicateursFinanciers))
-        {{-- Dettes Fournisseurs --}}
+        {{-- 6. Dettes fournisseurs --}}
         <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-dettes-fournisseurs">
             <div class="card modern-stat stat-red h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="stat-label">Dettes Fournisseurs</div>
-                            <div class="stat-value">{{ number_format($indicateursFinanciers['dettes_fournisseurs'] ?? 0, 0, ',', ' ') }} <small>XOF</small></div>
+                            <div class="stat-label">Dettes fournisseurs</div>
+                            <div class="stat-value">{{ number_format($indicateursFinanciers['dettes_fournisseurs'] ?? $dettesFournisseursPeriode ?? 0, 0, ',', ' ') }} <small>XOF</small></div>
                         </div>
                         <div class="stat-icon">
                             <i class="fas fa-truck"></i>
@@ -220,14 +185,17 @@
             </div>
         </div>
 
-        {{-- Flux de Trésorerie Net --}}
+        {{-- 7. Trésorerie disponible --}}
+        @php
+            $tresorerieDispo = $indicateursFinanciers['flux_tresorerie_net'] ?? $fluxTresoreriePeriode ?? 0;
+        @endphp
         <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-flux-tresorerie">
-            <div class="card modern-stat {{ ($indicateursFinanciers['flux_tresorerie_net'] ?? 0) >= 0 ? 'stat-teal' : 'stat-red' }} h-100">
+            <div class="card modern-stat {{ $tresorerieDispo >= 0 ? 'stat-teal' : 'stat-red' }} h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="stat-label">Flux Trésorerie Net</div>
-                            <div class="stat-value">{{ number_format($indicateursFinanciers['flux_tresorerie_net'] ?? 0, 0, ',', ' ') }} <small>XOF</small></div>
+                            <div class="stat-label">Trésorie disponible</div>
+                            <div class="stat-value">{{ number_format($tresorerieDispo, 0, ',', ' ') }} <small>XOF</small></div>
                         </div>
                         <div class="stat-icon">
                             <i class="fas fa-cash-register"></i>
@@ -237,23 +205,91 @@
             </div>
         </div>
 
-        {{-- Avances sur salaire en cours --}}
-        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-avances-salaires">
-            <div class="card modern-stat stat-gold h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="stat-label">Encours Avances Salaires</div>
-                            <div class="stat-value">{{ number_format($indicateursFinanciers['encours_avances_salaires'] ?? 0, 0, ',', ' ') }} <small>XOF</small></div>
+        {{-- 8. Produits en alerte --}}
+        @php
+            $nbProduitsAlerte = $produitsStockFaible->count();
+        @endphp
+        <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-produits-alerte">
+            <a href="#stock-faible-section" class="text-decoration-none d-block h-100">
+                <div class="card modern-stat {{ $nbProduitsAlerte > 0 ? 'stat-red' : 'stat-green' }} h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="stat-label">Produits en alerte</div>
+                                <div class="stat-value">{{ number_format($nbProduitsAlerte, 0, ',', ' ') }} <small>produit(s)</small></div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
                         </div>
-                        <div class="stat-icon">
-                            <i class="fas fa-user-tie"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    {{-- Métriques secondaires rétractables --}}
+    <div class="d-flex justify-content-end mt-2">
+        <a class="text-muted small text-decoration-none py-1 px-2 rounded hover-bg-light" data-bs-toggle="collapse" href="#autresIndicateurs" role="button" aria-expanded="false" aria-controls="autresIndicateurs">
+            <i class="fas fa-sliders-h me-1 text-primary"></i> Autres métriques (Ventes, Panier moyen, Avances) <i class="fas fa-chevron-down ms-1 small"></i>
+        </a>
+    </div>
+
+    <div class="collapse mt-2" id="autresIndicateurs">
+        <div class="row gx-3 gy-3">
+            {{-- Ventes réalisées --}}
+            <div class="col-sm-6 col-lg-4 indicator-card-col" id="card-nb-ventes">
+                <div class="card modern-stat stat-green h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="stat-label">Ventes réalisées</div>
+                                <div class="stat-value">{{ number_format($nbVentesPeriode, 0, ',', ' ') }} <small>vente(s)</small></div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {{-- Panier moyen --}}
+            <div class="col-sm-6 col-lg-4 indicator-card-col" id="card-panier-moyen">
+                <div class="card modern-stat stat-blue h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="stat-label">Panier moyen</div>
+                                <div class="stat-value">{{ number_format($panierMoyenPeriode, 0, ',', ' ') }} <small>XOF</small></div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Avances sur salaire en cours --}}
+            @if(isset($indicateursFinanciers))
+            <div class="col-sm-6 col-lg-4 indicator-card-col" id="card-avances-salaires">
+                <div class="card modern-stat stat-gold h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="stat-label">Encours Avances Salaires</div>
+                                <div class="stat-value">{{ number_format($indicateursFinanciers['encours_avances_salaires'] ?? 0, 0, ',', ' ') }} <small>XOF</small></div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
-        @endif
     </div>
 
     @if(isset($indicateursFinanciers['avertissement_comptable']))
@@ -286,7 +322,7 @@
     </div>
 
     {{-- Stock faible table --}}
-    <div class="row mt-4">
+    <div class="row mt-4" id="stock-faible-section">
         <div class="col-xl-12">
             <div class="card">
                 <div class="card-header redoff d-flex align-items-center gap-2">

@@ -218,7 +218,7 @@ class FinanceService
             'entrees_tresorerie'         => round($totalEntreesTresorerie, 2),
             'sorties_tresorerie'         => round($totalSortiesTresorerie, 2),
             'flux_tresorerie_net'        => round($fluxTresorerieNet, 2),
-            'avertissement_comptable'    => 'Indicateurs de gestion estimatifs hors taxes, amortissements et charges fiscales non enregistrées.',
+           
         ];
     }
 

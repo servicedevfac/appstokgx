@@ -154,7 +154,7 @@ html, body {
 
 @keyframes marqueeSlide {
     0% {
-        transform: translateX(100%);
+        transform: translateX(0%);
     }
 
     100% {
@@ -991,18 +991,13 @@ html, body {
     box-shadow: 0 4px 12px rgba(220, 38, 38, .2) !important;
     position: relative;
     box-sizing: border-box;
+    display: flex !important;
+    align-items: center !important;
 }
 
-.marquee-content {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    overflow: hidden !important;
-    white-space: nowrap;
-}
-
+/* Badge fixe "Stock faible" — toujours visible à gauche */
 .marquee-badge {
-    background: rgba(0, 0, 0, .3);
+    background: #dc2626;
     color: #ffffff;
     font-size: 11px;
     font-weight: 700;
@@ -1010,10 +1005,35 @@ html, body {
     letter-spacing: .5px;
     padding: 4px 10px;
     border-radius: var(--radius-full);
-    margin-right: 12px;
+    margin-right: 0;
     flex-shrink: 0;
+    white-space: nowrap;
+    z-index: 2;
+    position: relative;
 }
 
+/* Séparateur vertical entre le badge et la piste défilante */
+.marquee-badge::after {
+    content: '';
+    display: inline-block;
+    width: 1px;
+    height: 14px;
+    background: rgba(255, 255, 255, .4);
+    margin: 0 12px;
+    vertical-align: middle;
+}
+
+/* Zone de défilement — overflow caché pour masquer le texte hors zone */
+.marquee-content {
+    display: flex;
+    align-items: center;
+    flex: 1 1 0;
+    overflow: hidden !important;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+/* Piste défilante */
 .marquee-track {
     display: inline-block;
     white-space: nowrap;
@@ -1022,6 +1042,7 @@ html, body {
     will-change: transform;
     font-size: 13px;
     font-weight: 500;
+    padding-left: 100%; /* démarre hors de la zone visible */
 }
 
 .marquee-wrapper:hover .marquee-track {
