@@ -3,17 +3,7 @@
 @section('content')
 <div class="row mt-3">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="page-title fw-bold mb-0"><i class="fas fa-user-tie text-primary me-2"></i> Gestion des Employés</h3>
-            <a href="{{ route('avances-salaires.index') }}" class="btn btn-outline-primary">Gérer les Avances sur salaire</a>
-        </div>
-
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
+        
 
         <div class="row g-4">
             @can('créer employé')

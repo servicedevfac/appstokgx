@@ -3,14 +3,8 @@
 @section('content')
 <div class="row mt-3">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="page-title fw-bold mb-0"><i class="fas fa-hand-holding-usd text-primary me-2"></i> Avances sur Salaire & Remboursements</h3>
-            <a href="{{ route('employes.index') }}" class="btn btn-outline-primary">Voir les Employés</a>
-        </div>
-
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+       
+    
         @if($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">

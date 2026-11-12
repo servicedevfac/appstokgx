@@ -5,12 +5,7 @@
     <div class="col-12">
         <h3 class="page-title fw-bold mb-4"><i class="fas fa-tags text-primary me-2"></i> Catégories de Produits</h3>
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
+        
 
         <div class="row g-4">
             <div class="col-md-4">

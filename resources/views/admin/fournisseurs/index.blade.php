@@ -3,17 +3,8 @@
 @section('content')
 <div class="row mt-3">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="page-title fw-bold mb-0"><i class="fas fa-truck text-primary me-2"></i> Fournisseurs</h3>
-            <a href="{{ route('achats.index') }}" class="btn btn-outline-primary">Voir les Achats</a>
-        </div>
+       
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
 
         <div class="row g-4">
             @can('créer fournisseur')

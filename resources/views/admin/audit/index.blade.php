@@ -3,13 +3,7 @@
 @section('content')
 <div class="row mt-3">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h3 class="page-title fw-bold mb-1"><i class="fas fa-shield-alt text-primary me-2"></i> Journal d'Audit Inaltérable</h3>
-                <p class="text-muted mb-0">Traçabilité complète des opérations sensibles (RM-073, RM-074)</p>
-            </div>
-        </div>
-
+        
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">

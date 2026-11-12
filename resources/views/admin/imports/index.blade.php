@@ -3,23 +3,8 @@
 @section('content')
 <div class="row mt-3">
     <div class="col-12">
-        <h3 class="page-title fw-bold mb-4"><i class="fas fa-file-import text-primary me-2"></i> Importation de Données Excel / CSV</h3>
+       
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if(session('info'))
-            <div class="alert alert-info">{{ session('info') }}</div>
-        @endif
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach($errors->all() as $err)
-                        <li>{{ $err }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
 
         <div class="row g-4">
             <div class="col-lg-5">

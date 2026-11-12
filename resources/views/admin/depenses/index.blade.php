@@ -5,11 +5,7 @@
     <div class="col-12">
         {{-- En-tête de la page --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-            <div>
-                <h3 class="page-title mb-1 text-dark fw-bold">
-                    <i class="fas fa-wallet text-primary me-2"></i> Gestion des Dépenses
-                </h3>
-            </div>
+            
             <div class="d-flex flex-wrap gap-2">
                 @can('create depense')
                     <a href="{{ route('depenses.create') }}" class="btn btn-primary fw-semibold shadow-sm">
