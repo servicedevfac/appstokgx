@@ -210,7 +210,7 @@
             $nbProduitsAlerte = $produitsStockFaible->count();
         @endphp
         <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-produits-alerte">
-            <a href="#stock-faible-section" class="text-decoration-none d-block h-100">
+        
                 <div class="card modern-stat {{ $nbProduitsAlerte > 0 ? 'stat-red' : 'stat-green' }} h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
@@ -224,7 +224,7 @@
                         </div>
                     </div>
                 </div>
-            </a>
+          
         </div>
     </div>
 

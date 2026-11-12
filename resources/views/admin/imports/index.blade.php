@@ -9,7 +9,7 @@
         <div class="row g-4">
             <div class="col-lg-5">
                 <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white fw-bold">Téléverser un fichier pour aperçu avant validation</div>
+                    <div class="card-header bg- fw-bold">Téléverser un fichier pour aperçu avant validation</div>
                     <div class="card-body">
                         <form action="{{ route('imports.preview') }}" method="POST" enctype="multipart/form-data">
                             @csrf
@@ -41,7 +41,7 @@
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
-                                <thead class="table-light">
+                                <thead class="table-dark">
                                     <tr>
                                         <th>Date</th>
                                         <th>Type</th>
