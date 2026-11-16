@@ -386,8 +386,8 @@
                                 <span class="menu-icon"><i data-lucide="shield-alert"></i></span>
                                 <span class="menu-text"> Journal d'audit </span>
                             </a>
-                        </li> --}}
-                        @endif
+                        </li> 
+                        @endif--}}
                     @endif
                 </ul>
                 @endauth
