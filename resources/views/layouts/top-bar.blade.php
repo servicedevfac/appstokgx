@@ -93,14 +93,14 @@
                         </a>
                     </li>
 
-                    @if(Auth::user()->can('afficher journal audit') || Auth::user()->isSuperAdmin())
+                    {{-- @if(Auth::user()->can('afficher journal audit') || Auth::user()->isSuperAdmin())
                         <li>
                             <a href="{{ route('audit-logs.index') }}" class="dropdown-item notify-item">
                                 <i data-lucide="shield-check" class="font-size-16 me-2"></i>
                                 <span>Journal d'audit</span>
                             </a>
                         </li>
-                    @endif
+                    @endif --}}
 
                     @if(!$isPureSuperAdmin)
                         <li>
