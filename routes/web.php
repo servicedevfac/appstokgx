@@ -127,7 +127,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/imports/{batch}/confirm', [ImportController::class, 'confirm'])->name('imports.confirm');
 
     // Journal d'audit et historique de connexions
-    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+    //Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('/user-logins', [UserLoginController::class, 'index'])->name('user-logins.index');
     Route::get('/user-logins/{user}', [UserLoginController::class, 'show'])->name('user-logins.show');
 

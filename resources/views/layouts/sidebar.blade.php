@@ -380,13 +380,13 @@
                             </div>
                         </li>
 
-                        @if(Auth::user()->can('afficher journal audit'))
+                        {{-- @if(Auth::user()->can('afficher journal audit'))
                         <li class="menu-item">
                             <a href="{{ route('audit-logs.index') }}" class="menu-link waves-effect {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}">
                                 <span class="menu-icon"><i data-lucide="shield-alert"></i></span>
                                 <span class="menu-text"> Journal d'audit </span>
                             </a>
-                        </li>
+                        </li> --}}
                         @endif
                     @endif
                 </ul>
