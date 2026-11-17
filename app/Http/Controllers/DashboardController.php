@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Achat;
 use App\Models\Depense;
 use App\Models\Paiement;
 use App\Models\Produit;
@@ -227,6 +228,41 @@ class DashboardController extends Controller
             ->havingRaw('(COALESCE(SUM(CASE WHEN mouvement_stocks.type_mouvement = \'entree\' THEN mouvement_stocks.quantite ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN mouvement_stocks.type_mouvement = \'sortie\' THEN mouvement_stocks.quantite ELSE 0 END), 0)) <= produits.seuil_alerte')
             ->get();
 
+        // Créances clients en alerte (ventes non soldées avec reste à payer > 0)
+        $creancesEnAlerte = Vente::withoutGlobalScope('entreprise')
+            ->with('client')
+            ->whereIn('entreprise_id', $targetEntrepriseIds)
+            ->where('statut', 'valide')
+            ->where(function ($q) {
+                $q->where('est_paye', false)
+                  ->orWhere('reste_a_payer', '>', 0);
+            })
+            ->orderByRaw("CASE WHEN date_echeance IS NOT NULL AND date_echeance < ? THEN 0 ELSE 1 END", [Carbon::now()->toDateString()])
+            ->orderBy('date_echeance')
+            ->take(20)
+            ->get();
+
+        // Dettes fournisseurs en alerte (achats avec reste à payer > 0)
+        $dettesEnAlerte = Achat::withoutGlobalScope('entreprise')
+            ->with('fournisseur')
+            ->whereIn('entreprise_id', $targetEntrepriseIds)
+            ->where('reste_a_payer', '>', 0)
+            ->orderByRaw("CASE WHEN date_echeance IS NOT NULL AND date_echeance < ? THEN 0 ELSE 1 END", [Carbon::now()->toDateString()])
+            ->orderBy('date_echeance')
+            ->take(20)
+            ->get();
+
+        // Dépenses en attente de validation
+        $depensesEnAttente = Depense::withoutGlobalScope('entreprise')
+            ->with('user')
+            ->whereIn('entreprise_id', $targetEntrepriseIds)
+            ->where('statut', 'en_attente')
+            ->orderByDesc('created_at')
+            ->take(20)
+            ->get();
+
+        $totalAlertes = $produitsStockFaible->count() + $creancesEnAlerte->count() + $dettesEnAlerte->count() + $depensesEnAttente->count();
+
         // 12 derniers mois (Graphique)
         $months = collect(range(0, 11))
             ->map(fn ($i) => Carbon::now()->subMonths($i)->format('Y-m'))
@@ -340,6 +376,10 @@ class DashboardController extends Controller
             'derniersVentes',
             'derniersClients',
             'produitsStockFaible',
+            'creancesEnAlerte',
+            'dettesEnAlerte',
+            'depensesEnAttente',
+            'totalAlertes',
             'chiffreAffaireMoisEnCours',
             'depensesMois',
             'beneficeNetMois',

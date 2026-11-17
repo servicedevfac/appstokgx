@@ -205,26 +205,33 @@
             </div>
         </div>
 
-        {{-- 8. Produits en alerte --}}
+        {{-- 8. Alertes actives (Stocks, Créances, Dettes, Dépenses) --}}
         @php
             $nbProduitsAlerte = $produitsStockFaible->count();
+            $nbCreancesAlerte = isset($creancesEnAlerte) ? $creancesEnAlerte->count() : 0;
+            $nbDettesAlerte = isset($dettesEnAlerte) ? $dettesEnAlerte->count() : 0;
+            $nbDepensesAlerte = isset($depensesEnAttente) ? $depensesEnAttente->count() : 0;
+            $nbTotalAlertes = $totalAlertes ?? ($nbProduitsAlerte + $nbCreancesAlerte + $nbDettesAlerte + $nbDepensesAlerte);
         @endphp
         <div class="col-sm-6 col-lg-3 indicator-card-col" id="card-produits-alerte">
-        
-                <div class="card modern-stat {{ $nbProduitsAlerte > 0 ? 'stat-red' : 'stat-green' }} h-100">
+            <a href="#centre-alertes-section" class="text-decoration-none d-block h-100">
+                <div class="card modern-stat {{ $nbTotalAlertes > 0 ? 'stat-red' : 'stat-green' }} h-100">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <div class="stat-label">Produits en alerte</div>
-                                <div class="stat-value">{{ number_format($nbProduitsAlerte, 0, ',', ' ') }} <small>produit(s)</small></div>
+                                <div class="stat-label">Alertes actives</div>
+                                <div class="stat-value">{{ number_format($nbTotalAlertes, 0, ',', ' ') }} <small>alerte(s)</small></div>
+                                <div class="small mt-1 text-white opacity-75" style="font-size: 11px;">
+                                    Stocks ({{ $nbProduitsAlerte }}) &bull; Créances ({{ $nbCreancesAlerte }}) &bull; Dettes ({{ $nbDettesAlerte }})
+                                </div>
                             </div>
                             <div class="stat-icon">
-                                <i class="fas fa-exclamation-triangle"></i>
+                                <i class="fas fa-bell"></i>
                             </div>
                         </div>
                     </div>
                 </div>
-          
+            </a>
         </div>
     </div>
 
@@ -321,46 +328,223 @@
         </div>
     </div>
 
-    {{-- Stock faible table --}}
-    <div class="row mt-4" id="stock-faible-section">
+    {{-- Centre d'alertes & actions requises --}}
+    <div class="row mt-4" id="centre-alertes-section">
         <div class="col-xl-12">
-            <div class="card">
-                <div class="card-header redoff d-flex align-items-center gap-2">
-                    <i class="fas fa-exclamation-circle text-white"></i>
-                    <h4 class="card-title mb-0">Produits en stock faible</h4>
+            <div class="card shadow-sm border-0">
+                <div class="card-header redoff d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-triangle-exclamation text-white fs-5"></i>
+                        <div>
+                            <h4 class="card-title mb-0">Tableau des alertes & actions requises</h4>
+                            <small class="text-white opacity-75" style="font-size: 11px;">Stocks critiques, créances impayées, dettes échues et dépenses à valider</small>
+                        </div>
+                        <span class="badge bg-white text-danger fw-bold ms-2">{{ $nbTotalAlertes }} alerte(s)</span>
+                    </div>
+
+                    {{-- Boutons filtres rapides --}}
+                    <div class="d-flex flex-wrap align-items-center gap-1">
+                        <button type="button" class="btn btn-sm btn-light text-dark fw-semibold btn-alert-filter" onclick="filterAlertTable('all', this)">
+                            Toutes ({{ $nbTotalAlertes }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-light text-white btn-alert-filter" onclick="filterAlertTable('stock', this)">
+                            <i class="fas fa-boxes-stacked me-1"></i> Stocks ({{ $nbProduitsAlerte }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-light text-white btn-alert-filter" onclick="filterAlertTable('creance', this)">
+                            <i class="fas fa-hand-holding-dollar me-1"></i> Créances ({{ $nbCreancesAlerte }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-light text-white btn-alert-filter" onclick="filterAlertTable('dette', this)">
+                            <i class="fas fa-truck me-1"></i> Dettes ({{ $nbDettesAlerte }})
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-light text-white btn-alert-filter" onclick="filterAlertTable('depense', this)">
+                            <i class="fas fa-receipt me-1"></i> Dépenses ({{ $nbDepensesAlerte }})
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover table-centered table-nowrap mb-0">
+                        <table class="table table-hover table-centered align-middle table-nowrap mb-0" id="table-alertes-actives">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>N°</th>
-                                    <th>Nom produit</th>
-                                    <th>Stock actuel</th>
-                                    <th>Seuil d'alerte</th>
-                                    <th>Action</th>
+                                    <th style="width: 50px;">N°</th>
+                                    <th>Type d'alerte</th>
+                                    <th>Élément concerné</th>
+                                    <th>Détail / Montant</th>
+                                    <th>Échéance & Urgence</th>
+                                    <th class="text-end" style="width: 170px;">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($produitsStockFaible as $produit)
-                                    <tr class="low-stock-row">
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td><strong>{{ $produit->nom }}</strong></td>
-                                        <td><span class="badge bg-danger">{{ $produit->stock_actuel }}</span></td>
-                                        <td><span class="badge bg-warning">{{ $produit->seuil_alerte }}</span></td>
+                                @php $alertIndex = 1; @endphp
+
+                                {{-- 1. Produits en rupture / stock faible --}}
+                                @foreach ($produitsStockFaible as $produit)
+                                    <tr class="alert-row" data-type="stock">
+                                        <td>{{ $alertIndex++ }}</td>
                                         <td>
-                                            <a href="{{ route('mouvementStocks.create') }}"
-                                                class="btn btn-header1 btn-sm"><i class="fas fa-plus me-1"></i>Approvisionner</a>
+                                            @if($produit->stock_actuel <= 0)
+                                                <span class="badge bg-danger"><i class="fas fa-boxes-stacked me-1"></i> Rupture de stock</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark"><i class="fas fa-box-open me-1"></i> Stock faible</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <strong>{{ $produit->nom }}</strong>
+                                            @if($produit->reference)
+                                                <small class="text-muted d-block">Réf: {{ $produit->reference }}</small>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            Stock : <strong class="{{ $produit->stock_actuel <= 0 ? 'text-danger' : 'text-warning' }}">{{ $produit->stock_actuel }}</strong>
+                                            <span class="text-muted small ms-1">(Seuil : {{ $produit->seuil_alerte }})</span>
+                                        </td>
+                                        <td>
+                                            @if($produit->stock_actuel <= 0)
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                                    <i class="fas fa-triangle-exclamation me-1"></i> Rupture critique
+                                                </span>
+                                            @else
+                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                                    <i class="fas fa-clock me-1"></i> Réapprovisionner
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="{{ route('mouvementStocks.create') }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-plus me-1"></i>Approvisionner
+                                            </a>
                                         </td>
                                     </tr>
-                                @empty
+                                @endforeach
+
+                                {{-- 2. Créances clients non soldées --}}
+                                @foreach ($creancesEnAlerte as $vente)
+                                    @php
+                                        $isPast = $vente->date_echeance && \Carbon\Carbon::parse($vente->date_echeance)->isPast();
+                                    @endphp
+                                    <tr class="alert-row" data-type="creance">
+                                        <td>{{ $alertIndex++ }}</td>
+                                        <td>
+                                            @if($isPast)
+                                                <span class="badge bg-danger"><i class="fas fa-hand-holding-dollar me-1"></i> Créance échue</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> Créance client</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <strong>{{ $vente->client?->nom ?? 'Client comptoir' }}</strong>
+                                            <small class="text-muted d-block">Vente #{{ $vente->code_recu ?? $vente->id }} ({{ \Carbon\Carbon::parse($vente->date_vente)->format('d/m/Y') }})</small>
+                                        </td>
+                                        <td>
+                                            Reste dû : <strong class="text-danger">{{ number_format($vente->reste_a_payer, 0, ',', ' ') }} XOF</strong>
+                                            <small class="text-muted d-block">Total : {{ number_format($vente->montant_total, 0, ',', ' ') }} XOF</small>
+                                        </td>
+                                        <td>
+                                            @if($vente->date_echeance)
+                                                @if($isPast)
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                                        <i class="fas fa-calendar-xmark me-1"></i> Échue le {{ \Carbon\Carbon::parse($vente->date_echeance)->format('d/m/Y') }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                                        <i class="fas fa-calendar-day me-1"></i> Échéance : {{ \Carbon\Carbon::parse($vente->date_echeance)->format('d/m/Y') }}
+                                                    </span>
+                                                @endif
+                                            @else
+                                                <span class="badge bg-secondary-subtle text-secondary border">Sans échéance fixée</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="{{ route('ventes.show', $vente->id) }}" class="btn btn-sm btn-info text-white">
+                                                <i class="fas fa-eye me-1"></i>Voir vente
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                                {{-- 3. Dettes fournisseurs non soldées --}}
+                                @foreach ($dettesEnAlerte as $achat)
+                                    @php
+                                        $isDettePast = $achat->date_echeance && \Carbon\Carbon::parse($achat->date_echeance)->isPast();
+                                    @endphp
+                                    <tr class="alert-row" data-type="dette">
+                                        <td>{{ $alertIndex++ }}</td>
+                                        <td>
+                                            @if($isDettePast)
+                                                <span class="badge bg-danger"><i class="fas fa-truck me-1"></i> Dette échue</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark"><i class="fas fa-truck me-1"></i> Dette fournisseur</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <strong>{{ $achat->fournisseur?->nom ?? 'Fournisseur' }}</strong>
+                                            <small class="text-muted d-block">Achat {{ $achat->numero_achat ?? ('#' . $achat->id) }}</small>
+                                        </td>
+                                        <td>
+                                            Reste à payer : <strong class="text-danger">{{ number_format($achat->reste_a_payer, 0, ',', ' ') }} XOF</strong>
+                                            <small class="text-muted d-block">Total : {{ number_format($achat->montant_total, 0, ',', ' ') }} XOF</small>
+                                        </td>
+                                        <td>
+                                            @if($achat->date_echeance)
+                                                @if($isDettePast)
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                                        <i class="fas fa-calendar-xmark me-1"></i> Échue le {{ \Carbon\Carbon::parse($achat->date_echeance)->format('d/m/Y') }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                                        <i class="fas fa-calendar-day me-1"></i> Échéance : {{ \Carbon\Carbon::parse($achat->date_echeance)->format('d/m/Y') }}
+                                                    </span>
+                                                @endif
+                                            @else
+                                                <span class="badge bg-secondary-subtle text-secondary border">À solder</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="{{ route('achats.show', $achat->id) }}" class="btn btn-sm btn-warning text-dark">
+                                                <i class="fas fa-money-bill me-1"></i>Régler dette
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                                {{-- 4. Dépenses en attente de validation --}}
+                                @foreach ($depensesEnAttente as $depense)
+                                    <tr class="alert-row" data-type="depense">
+                                        <td>{{ $alertIndex++ }}</td>
+                                        <td>
+                                            <span class="badge bg-info text-dark"><i class="fas fa-receipt me-1"></i> Dépense à valider</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ $depense->titre }}</strong>
+                                            <small class="text-muted d-block">Demandeur : {{ $depense->user?->nom ?? 'Inconnu' }}</small>
+                                        </td>
+                                        <td>
+                                            Montant : <strong class="text-primary">{{ number_format($depense->montant, 0, ',', ' ') }} XOF</strong>
+                                            @if($depense->categorie)
+                                                <small class="text-muted d-block">Cat: {{ $depense->categorie }}</small>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">
+                                                <i class="fas fa-hourglass-half me-1"></i> Du {{ \Carbon\Carbon::parse($depense->date_depense)->format('d/m/Y') }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="{{ route('depenses.index') }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-check-circle me-1"></i>Valider
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                                @if($nbTotalAlertes === 0)
                                     <tr>
-                                        <td colspan="5" class="text-center py-4 text-success">
+                                        <td colspan="6" class="text-center py-4 text-success">
                                             <i class="fas fa-check-circle font-size-24 mb-2 d-block opacity-75"></i>
-                                            Tous les stocks sont à un niveau optimal !
+                                            Toutes vos opérations sont sous contrôle ! Aucune alerte active (stocks, créances, dettes, dépenses).
                                         </td>
                                     </tr>
-                                @endforelse
+                                @endif
                             </tbody>
                         </table>
                     </div>
@@ -661,5 +845,22 @@
             }
         }
     });
+
+    function filterAlertTable(type, btn) {
+        document.querySelectorAll('.btn-alert-filter').forEach(function(b) {
+            b.classList.remove('btn-light', 'text-dark', 'fw-semibold');
+            b.classList.add('btn-outline-light', 'text-white');
+        });
+        btn.classList.remove('btn-outline-light', 'text-white');
+        btn.classList.add('btn-light', 'text-dark', 'fw-semibold');
+
+        document.querySelectorAll('.alert-row').forEach(function(row) {
+            if (type === 'all' || row.dataset.type === type) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
 </script>
 @endsection
