@@ -194,13 +194,10 @@
         </tbody>
     </table>
     </div>
-
     {{ $ventes->appends(request()->query())->links() }}
         </div>
     </div>
 </div>
-
-
 @endsection
 
 @section('scripts')

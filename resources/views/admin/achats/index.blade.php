@@ -9,9 +9,6 @@
                 <a href="{{ route('achats.create') }}" class="btn btn-primary"><i class="fas fa-plus me-1"></i> Nouvel Achat</a>
             @endcan
         </div>
-
-      
-
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">

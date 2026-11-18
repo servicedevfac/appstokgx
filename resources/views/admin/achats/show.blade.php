@@ -33,7 +33,6 @@
                 </ul>
             </div>
         @endif
-
         <div class="row g-4">
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm mb-4">
