@@ -619,6 +619,32 @@ html, body {
     animation-delay: .36s;
 }
 
+/* ── Metrics Toggle Switch ────────────────────────────────── */
+.metrics-toggle-switch {
+    transition: all 0.2s ease-in-out;
+    border: 1px solid var(--border) !important;
+    background: var(--surface) !important;
+}
+
+.metrics-toggle-switch:hover {
+    border-color: var(--primary) !important;
+    background: var(--surface-alt) !important;
+}
+
+.metrics-toggle-switch.active {
+    border-color: rgba(26, 35, 126, 0.4) !important;
+    background: rgba(26, 35, 126, 0.06) !important;
+}
+
+.metrics-toggle-switch .form-check-input {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.metrics-toggle-switch .form-check-input:checked {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
 /* ── Tables ───────────────────────────────────────────────── */
 .table {
     font-size: 13.5px !important;
@@ -1202,8 +1228,9 @@ div.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
     position: relative !important;
     width: 100% !important;
     max-width: 100% !important;
-    height: 380px !important;
-    padding: 20px;
+    height: 440px !important;
+    min-height: 400px !important;
+    padding: 10px 16px 20px 16px !important;
     background: var(--surface);
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     box-sizing: border-box;
@@ -1211,15 +1238,17 @@ div.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
 
 @media (max-width: 991.98px) {
     .chart-container {
-        height: 320px !important;
-        padding: 12px;
+        height: 390px !important;
+        min-height: 350px !important;
+        padding: 8px 12px 18px 12px !important;
     }
 }
 
 @media (max-width: 767.98px) {
     .chart-container {
-        height: 260px !important;
-        padding: 8px;
+        height: 350px !important;
+        min-height: 310px !important;
+        padding: 6px 8px 16px 8px !important;
     }
 }
 
@@ -1783,7 +1812,8 @@ body {
     .chart-container {
         position: relative;
         width: 100%;
-        height: 260px !important;
+        height: 350px !important;
+        min-height: 310px !important;
     }
 
     /* Stock Alert Marquee */

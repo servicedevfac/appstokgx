@@ -373,6 +373,14 @@
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    top: 10,
+                    bottom: 15,
+                    left: 10,
+                    right: 15
+                }
+            },
             plugins: {
                 legend: {
                     display: true,
@@ -403,16 +411,37 @@
             scales: {
                 x: {
                     display: true,
-                    title: { display: true, text: 'Mois', font: { family: "'Inter', sans-serif", weight: '600' } },
+                    title: {
+                        display: true,
+                        text: 'Mois',
+                        color: '#475569',
+                        font: { family: "'Inter', sans-serif", size: 12, weight: '600' },
+                        padding: { top: 10 }
+                    },
                     grid: { display: false },
-                    ticks: { font: { family: "'Inter', sans-serif", size: 11 } }
+                    ticks: {
+                        display: true,
+                        color: '#475569',
+                        font: { family: "'Inter', sans-serif", size: 11, weight: '500' },
+                        maxRotation: 45,
+                        minRotation: 0,
+                        autoSkip: false
+                    }
                 },
                 y: {
                     display: true,
-                    title: { display: true, text: 'Montant', font: { family: "'Inter', sans-serif", weight: '600' } },
+                    title: {
+                        display: true,
+                        text: 'Montant (XOF)',
+                        color: '#475569',
+                        font: { family: "'Inter', sans-serif", size: 12, weight: '600' },
+                        padding: { bottom: 10 }
+                    },
                     beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    grid: { color: 'rgba(0,0,0,0.05)' },
                     ticks: {
+                        display: true,
+                        color: '#475569',
                         font: { family: "'Inter', sans-serif", size: 11 },
                         callback: function(value) {
                             return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(value);

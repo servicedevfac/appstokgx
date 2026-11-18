@@ -8,9 +8,7 @@
                 <h3 class="page-title mb-1 fw-bold">
                     <i class="fas fa-gem text-primary me-2"></i> Mon Abonnement SaaS — {{ $entreprise?->nom ?? 'Entreprise' }}
                 </h3>
-                <p class="text-muted mb-0">
-                    Consultez la formule actuelle, la date d'échéance et la consommation des quotas de votre entreprise.
-                </p>
+               
             </div>
             @if(Auth::user()->isProprietaire())
                 <div>
@@ -36,13 +34,9 @@
                                 <div>
                                     <span class="text-muted small text-uppercase fw-semibold">Formule souscrite</span>
                                     <h4 class="fw-bold text-primary mb-1">{{ $abonnement?->nom_plan ?? 'Pack Business Pro' }}</h4>
-                                    <span class="badge bg-light text-dark border">Entreprise : {{ $entreprise->nom }} ({{ $entreprise->code }})</span>
+                                    
                                 </div>
-                                @if($abonnement)
-                                    <span class="badge {{ $abonnement->badgeClass() }} fs-6 px-3 py-2">
-                                        {{ $abonnement->statutLabel() }}
-                                    </span>
-                                @endif
+                               
                             </div>
 
                             @if($abonnement && !$abonnement->isActive())

@@ -158,20 +158,9 @@
                 @endif
                 </td>
                  <td>{{ $vente->date_vente}}</td>
+               
                 <td style="display:flex;flex-direction:row;justify-content:center; gap: 5px; ">
-                    @if($vente->code_recu)
-                        @php
-                            $pdfUrl = $vente->pdf_recu 
-                                ? asset('storage/' . $vente->pdf_recu) 
-                                : asset('storage/recus/recu_vente_' . ($vente->client?->nom ?? 'client') . '_' . $vente->code_recu . '.pdf');
-                        @endphp
-                        <a href="{{ $pdfUrl }}" class="btn btn-header1 btn-lg" target="_blank"><i class="fas fa-file-pdf"></i></a>
-                    @else
-                        <span class="text-muted">Pas de reçu</span>
-                    @endif
                     <a href="{{ route('ventes.ticket', $vente->id) }}" target="_blank" class="btn  btn-header1 btn-lg"><i class="fas fa-print"></i></a>
-                </td>
-                <td style="display:flex;flex-direction:row;justify-content:center; gap: 5px; ">
                     @can('view vente')
                         <a href="{{ route('ventes.show', $vente->id) }}" class="btn btn-header1 text-white-bold btn-lg rounded-3"><i class="fas fa-eye"></i></a>
                     @endcan
@@ -185,8 +174,7 @@
                             <i class="fas fa-ban"></i>
                         </button>
                     </form>
-        @endcan
-
+                    @endcan
                 </td>
             </tr>
             @empty

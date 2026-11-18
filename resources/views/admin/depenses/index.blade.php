@@ -32,7 +32,7 @@
                                 <div class="stat-value text-primary fw-bold">
                                     {{ number_format($totalMois, 0, ',', ' ') }} <small class="font-size-12">XOF</small>
                                 </div>
-                                <small class="text-muted font-size-12">{{ now()->translatedFormat('F Y') }}</small>
+                                <small class="text-white font-size-12">{{ now()->translatedFormat('F Y') }}</small>
                             </div>
                             <div class="stat-icon bg-primary-subtle text-primary">
                                 <i class="fas fa-calendar-alt"></i>
@@ -51,7 +51,7 @@
                                 <div class="stat-value text-warning fw-bold">
                                     {{ number_format($totalJour, 0, ',', ' ') }} <small class="font-size-12">XOF</small>
                                 </div>
-                                <small class="text-muted font-size-12">{{ now()->format('d/m/Y') }}</small>
+                                <small class="text-white font-size-12">{{ now()->format('d/m/Y') }}</small>
                             </div>
                             <div class="stat-icon bg-warning-subtle text-warning">
                                 <i class="fas fa-coins"></i>
@@ -70,7 +70,7 @@
                                 <div class="stat-value text-purple fw-bold">
                                     {{ number_format($totalFiltre, 0, ',', ' ') }} <small class="font-size-12">XOF</small>
                                 </div>
-                                <small class="text-muted font-size-12">{{ $depenses->total() }} opération(s)</small>
+                                <small class="text-white font-size-12">{{ $depenses->total() }} opération(s)</small>
                             </div>
                             <div class="stat-icon bg-purple-subtle text-purple">
                                 <i class="fas fa-filter"></i>
@@ -89,7 +89,7 @@
                                 <div class="stat-value text-danger font-size-18 fw-bold text-truncate" style="max-width: 170px;" title="{{ $topCategorie->categorie ?? 'Aucune' }}">
                                     {{ $topCategorie->categorie ?? 'Aucun' }}
                                 </div>
-                                <small class="text-muted font-size-12">
+                                <small class="text-white font-size-12">
                                     @if($topCategorie)
                                         {{ number_format($topCategorie->total, 0, ',', ' ') }} XOF
                                     @else

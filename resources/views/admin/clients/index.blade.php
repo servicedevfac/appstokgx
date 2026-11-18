@@ -19,7 +19,7 @@
             <div class="card-body">
                 <!-- Formulaire de recherche -->
                 <form method="GET" action="" class="mb-3">
-                    <div class="input-group">
+                    <div class="input-group gap-2">
                         <input type="text" name="search" class="form-control" placeholder="Rechercher un client..." value="{{ request('search') }}">
                         <button class="btn btn-header1" type="submit">
                             <i class="fas fa-search"></i> Rechercher

@@ -6,21 +6,23 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header card-heade d-flex justify-content-between align-items-center">
                     <h3 class="header-title text-white "><i class="fas fa-list me-2"></i> Liste des produits</h3>
+                    <div class=" d-flex justify-content-end gap-2">
                     @can('create produit')
                         <a href="{{ route('produits.create') }}" class="btn btn-header fw-bold shadow-sm">
                             <i class="fas fa-plus me-1"></i> Nouveau produit
                         </a>
                     @endcan
-                </div>
-                <div class="mb-3 d-flex justify-content-end gap-2">
-                    <a href="{{ route('export.products', ['format' => 'excel']) }}" class="btn btn-success">
-                        <i class="bi bi-file-earmark-excel"></i> Exporter en Excel
-                    </a>
+                   
+                        <a href="{{ route('export.products', ['format' => 'excel']) }}" class="btn btn-success">
+                            <i class="bi bi-file-earmark-excel"></i> Exporter en Excel
+                        </a>
 
-                    <a href="{{ route('export.products', ['format' => 'pdf']) }}" class="btn btn-danger">
-                        <i class="bi bi-file-earmark-pdf"></i> Exporter en PDF
-                    </a>
+                        <a href="{{ route('export.products', ['format' => 'pdf']) }}" class="btn btn-danger">
+                            <i class="bi bi-file-earmark-pdf"></i> Exporter en PDF
+                        </a>
+                    </div>
                 </div>
+
                 <div class="card-body">
                     <div class="table-responsive">
                           <table class="table table-hover table-bordered dt-responsive nowrap w-100">

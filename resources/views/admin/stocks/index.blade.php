@@ -5,16 +5,17 @@
         <div class="card shadow-sm border-0">
             <div class="card-header card-heade d-flex justify-content-between align-items-center">
                 <h3 class="text-white m-0"><i class="fas fa-list me-2"></i>  Liste des mouvements de stock</h3>
-                @can('create stock')
-
-                <a href="{{ route('mouvementStocks.create') }}" class="btn btn-header  fw-bold shadow-sm">
-                    <i class="fas fa-plus me-1"></i> Nouveau mouvement de stock
-                </a>
-                @endcan
+             
+                <div class="d-flex justify-content-end gap-2">  
+                    @can('create stock') 
+                    <a href="{{ route('mouvementStocks.create') }}" class="btn btn-header  fw-bold shadow-sm">
+                        <i class="fas fa-plus me-1"></i> Nouveau mouvement de stock
+                    </a>
+                    @endcan 
+                    <a href="{{ route('mouvementStocks.export-excel') }}" class="btn btn-success">Exporter en excel</a>
+                </div>
             </div>
-            <div class="d-flex justify-content-end">
-                <a href="{{ route('mouvementStocks.export-excel') }}" class="btn btn-success">Exporter en excel</a>
-            </div>
+           
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered dt-responsive nowrap w-100">

@@ -235,11 +235,15 @@
         </div>
     </div>
 
-    {{-- Métriques secondaires rétractables --}}
-    <div class="d-flex justify-content-end mt-2">
-        <a class="text-muted small text-decoration-none py-1 px-2 rounded hover-bg-light" data-bs-toggle="collapse" href="#autresIndicateurs" role="button" aria-expanded="false" aria-controls="autresIndicateurs">
-            <i class="fas fa-sliders-h me-1 text-primary"></i> Autres métriques (Ventes, Panier moyen, Avances) <i class="fas fa-chevron-down ms-1 small"></i>
-        </a>
+    {{-- Toggle interactif pour les métriques secondaires --}}
+    <div class="d-flex justify-content-end align-items-center mt-3 mb-1">
+        <label class="metrics-toggle-switch d-inline-flex align-items-center gap-2 py-1 px-3 rounded-pill bg-light border cursor-pointer shadow-sm" for="switchAutresIndicateurs" style="cursor: pointer;">
+            <i class="fas fa-sliders-h text-primary small"></i>
+            <span class="small fw-semibold text-muted" id="labelSwitchAutres">Autres métriques (Ventes, Panier moyen, Avances)</span>
+            <div class="form-check form-switch m-0 p-0 d-flex align-items-center">
+                <input class="form-check-input m-0 cursor-pointer" type="checkbox" role="switch" id="switchAutresIndicateurs" style="cursor: pointer; width: 2.2em; height: 1.2em;">
+            </div>
+        </label>
     </div>
 
     <div class="collapse mt-2" id="autresIndicateurs">
@@ -796,6 +800,14 @@
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    top: 10,
+                    bottom: 15,
+                    left: 10,
+                    right: 15
+                }
+            },
             plugins: {
                 legend: {
                     display: true,
@@ -826,16 +838,37 @@
             scales: {
                 x: {
                     display: true,
-                    title: { display: true, text: 'Mois', font: { family: "'Inter', sans-serif", weight: '600' } },
+                    title: {
+                        display: true,
+                        text: 'Mois',
+                        color: '#475569',
+                        font: { family: "'Inter', sans-serif", size: 12, weight: '600' },
+                        padding: { top: 10 }
+                    },
                     grid: { display: false },
-                    ticks: { font: { family: "'Inter', sans-serif", size: 11 } }
+                    ticks: {
+                        display: true,
+                        color: '#475569',
+                        font: { family: "'Inter', sans-serif", size: 11, weight: '500' },
+                        maxRotation: 45,
+                        minRotation: 0,
+                        autoSkip: false
+                    }
                 },
                 y: {
                     display: true,
-                    title: { display: true, text: 'Montant', font: { family: "'Inter', sans-serif", weight: '600' } },
+                    title: {
+                        display: true,
+                        text: 'Montant (XOF)',
+                        color: '#475569',
+                        font: { family: "'Inter', sans-serif", size: 12, weight: '600' },
+                        padding: { bottom: 10 }
+                    },
                     beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    grid: { color: 'rgba(0,0,0,0.05)' },
                     ticks: {
+                        display: true,
+                        color: '#475569',
                         font: { family: "'Inter', sans-serif", size: 11 },
                         callback: function(value) {
                             return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(value);
@@ -862,5 +895,40 @@
             }
         });
     }
+
+    // Gestion du toggle des métriques secondaires
+    document.addEventListener('DOMContentLoaded', function () {
+        const switchEl = document.getElementById('switchAutresIndicateurs');
+        const containerEl = document.getElementById('autresIndicateurs');
+        const pillEl = document.querySelector('.metrics-toggle-switch');
+        const labelEl = document.getElementById('labelSwitchAutres');
+
+        if (!switchEl || !containerEl) return;
+
+        const bsCollapse = new bootstrap.Collapse(containerEl, { toggle: false });
+
+        // État mémorisé dans localStorage (fermé par défaut)
+        const isSavedOpen = localStorage.getItem('gestbox_extra_metrics') === 'true';
+        if (isSavedOpen) {
+            switchEl.checked = true;
+            if (pillEl) pillEl.classList.add('active');
+            if (labelEl) labelEl.textContent = 'Masquer les autres métriques';
+            bsCollapse.show();
+        }
+
+        switchEl.addEventListener('change', function () {
+            if (this.checked) {
+                bsCollapse.show();
+                if (pillEl) pillEl.classList.add('active');
+                if (labelEl) labelEl.textContent = 'Masquer les autres métriques';
+                localStorage.setItem('gestbox_extra_metrics', 'true');
+            } else {
+                bsCollapse.hide();
+                if (pillEl) pillEl.classList.remove('active');
+                if (labelEl) labelEl.textContent = 'Autres métriques (Ventes, Panier moyen, Avances)';
+                localStorage.setItem('gestbox_extra_metrics', 'false');
+            }
+        });
+    });
 </script>
 @endsection
