@@ -70,28 +70,7 @@
 <body>
     @php
         $entreprise = $vente->entreprise ?? null;
-        $logoBase64 = null;
-        $logoFile = null;
-        if ($entreprise && $entreprise->logo && file_exists(public_path($entreprise->logo))) {
-            $logoFile = public_path($entreprise->logo);
-        } elseif (file_exists(public_path('assets/images/logo-dark.png'))) {
-            $logoFile = public_path('assets/images/logo-dark.png');
-        }
-
-        if ($logoFile && is_readable($logoFile)) {
-            $ext = strtolower(pathinfo($logoFile, PATHINFO_EXTENSION));
-            $mime = match($ext) {
-                'jpg', 'jpeg' => 'image/jpeg',
-                'png'         => 'image/png',
-                'webp'        => 'image/webp',
-                'gif'         => 'image/gif',
-                default       => 'image/png',
-            };
-            $data = @file_get_contents($logoFile);
-            if ($data !== false) {
-                $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode($data);
-            }
-        }
+        $logoBase64 = $entreprise?->getLogoBase64();
     @endphp
 
     <div class="header">

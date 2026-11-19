@@ -54,19 +54,37 @@ class EntrepriseController extends Controller
         $proprietaireId = (int) $validated['proprietaire_id'];
 
         $logoPath = null;
+        $logoBase64 = null;
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $uploadDir = public_path('uploads/logos_entreprises');
+            $storageDir = storage_path('app/public/logos_entreprises');
             if (! File::isDirectory($uploadDir)) {
                 File::makeDirectory($uploadDir, 0755, true, true);
             }
+            if (! File::isDirectory($storageDir)) {
+                File::makeDirectory($storageDir, 0755, true, true);
+            }
+
+            // Génération base64 pour persistance garantie en base (résiste aux redéploiements)
+            $fileContent = @file_get_contents($file->getRealPath());
+            if ($fileContent !== false) {
+                $mime = $file->getClientMimeType() ?: 'image/png';
+                $logoBase64 = 'data:' . $mime . ';base64,' . base64_encode($fileContent);
+            }
+
             $fileName = 'logo_' . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
             $file->move($uploadDir, $fileName);
+            @copy($uploadDir . '/' . $fileName, $storageDir . '/' . $fileName);
             $logoPath = 'uploads/logos_entreprises/' . $fileName;
         }
 
-        $entreprise = DB::transaction(function () use ($validated, $proprietaireId, $logoPath) {
+        $entreprise = DB::transaction(function () use ($validated, $proprietaireId, $logoPath, $logoBase64) {
             $code = 'ENT-' . strtoupper(Str::random(6));
+            $params = [];
+            if ($logoBase64) {
+                $params['logo_base64'] = $logoBase64;
+            }
             $ent = Entreprise::create([
                 'nom'                    => $validated['nom'],
                 'code'                   => $code,
@@ -79,6 +97,7 @@ class EntrepriseController extends Controller
                 'plafond_avance_salaire' => $validated['plafond_avance_salaire'] ?? 100000,
                 'proprietaire_id'        => $proprietaireId,
                 'actif'                  => true,
+                'parametres'             => $params,
             ]);
 
             DB::table('entreprise_user')->updateOrInsert(
@@ -139,15 +158,30 @@ class EntrepriseController extends Controller
             'logo'                   => 'nullable|file|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
+        $params = $entreprise->parametres ?? [];
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $uploadDir = public_path('uploads/logos_entreprises');
+            $storageDir = storage_path('app/public/logos_entreprises');
             if (! File::isDirectory($uploadDir)) {
                 File::makeDirectory($uploadDir, 0755, true, true);
             }
+            if (! File::isDirectory($storageDir)) {
+                File::makeDirectory($storageDir, 0755, true, true);
+            }
+
+            // Génération base64 pour persistance garantie en base (résiste aux redéploiements)
+            $fileContent = @file_get_contents($file->getRealPath());
+            if ($fileContent !== false) {
+                $mime = $file->getClientMimeType() ?: 'image/png';
+                $params['logo_base64'] = 'data:' . $mime . ';base64,' . base64_encode($fileContent);
+            }
+
             $fileName = 'logo_' . time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
             $file->move($uploadDir, $fileName);
+            @copy($uploadDir . '/' . $fileName, $storageDir . '/' . $fileName);
             $validated['logo'] = 'uploads/logos_entreprises/' . $fileName;
+            $validated['parametres'] = $params;
         }
 
         $entreprise->update($validated);

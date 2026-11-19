@@ -341,28 +341,23 @@
                         <i class="fas fa-triangle-exclamation text-white fs-5"></i>
                         <div>
                             <h4 class="card-title mb-0">Tableau des alertes & actions requises</h4>
-                            <small class="text-white opacity-75" style="font-size: 11px;">Stocks critiques, créances impayées, dettes échues et dépenses à valider</small>
+                           
                         </div>
                         <span class="badge bg-white text-danger fw-bold ms-2">{{ $nbTotalAlertes }} alerte(s)</span>
                     </div>
 
-                    {{-- Boutons filtres rapides --}}
-                    <div class="d-flex flex-wrap align-items-center gap-1">
-                        <button type="button" class="btn btn-sm btn-light text-dark fw-semibold btn-alert-filter" onclick="filterAlertTable('all', this)">
-                            Toutes ({{ $nbTotalAlertes }})
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-light text-white btn-alert-filter" onclick="filterAlertTable('stock', this)">
-                            <i class="fas fa-boxes-stacked me-1"></i> Stocks ({{ $nbProduitsAlerte }})
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-light text-white btn-alert-filter" onclick="filterAlertTable('creance', this)">
-                            <i class="fas fa-hand-holding-dollar me-1"></i> Créances ({{ $nbCreancesAlerte }})
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-light text-white btn-alert-filter" onclick="filterAlertTable('dette', this)">
-                            <i class="fas fa-truck me-1"></i> Dettes ({{ $nbDettesAlerte }})
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-light text-white btn-alert-filter" onclick="filterAlertTable('depense', this)">
-                            <i class="fas fa-receipt me-1"></i> Dépenses ({{ $nbDepensesAlerte }})
-                        </button>
+                    {{-- Filtre en liste déroulante --}}
+                    <div class="d-flex align-items-center gap-2">
+                        <label for="selectFilterAlertTable" class="text-white small fw-semibold text-nowrap mb-0 d-none d-sm-inline">
+                            <i class="fas fa-filter me-1"></i> Filtrer par :
+                        </label>
+                        <select id="selectFilterAlertTable" class="form-select form-select-sm bg-white text-dark fw-semibold shadow-sm border-0" style="min-width: 230px; border-radius: 8px; cursor: pointer;" onchange="filterAlertTable(this.value)">
+                            <option value="all">Toutes les alertes ({{ $nbTotalAlertes }})</option>
+                            <option value="stock">Stocks en alerte ({{ $nbProduitsAlerte }})</option>
+                            <option value="creance">Créances clients ({{ $nbCreancesAlerte }})</option>
+                            <option value="dette">Dettes fournisseurs ({{ $nbDettesAlerte }})</option>
+                            <option value="depense">Dépenses à valider ({{ $nbDepensesAlerte }})</option>
+                        </select>
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -549,6 +544,12 @@
                                         </td>
                                     </tr>
                                 @endif
+                                <tr id="alert-empty-row" style="display: none;">
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        <i class="fas fa-check-circle text-success font-size-24 mb-2 d-block opacity-75"></i>
+                                        Aucune alerte dans cette catégorie.
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -879,21 +880,21 @@
         }
     });
 
-    function filterAlertTable(type, btn) {
-        document.querySelectorAll('.btn-alert-filter').forEach(function(b) {
-            b.classList.remove('btn-light', 'text-dark', 'fw-semibold');
-            b.classList.add('btn-outline-light', 'text-white');
-        });
-        btn.classList.remove('btn-outline-light', 'text-white');
-        btn.classList.add('btn-light', 'text-dark', 'fw-semibold');
-
+    function filterAlertTable(type) {
+        let visibleCount = 0;
         document.querySelectorAll('.alert-row').forEach(function(row) {
             if (type === 'all' || row.dataset.type === type) {
                 row.style.display = '';
+                visibleCount++;
             } else {
                 row.style.display = 'none';
             }
         });
+
+        const emptyRow = document.getElementById('alert-empty-row');
+        if (emptyRow) {
+            emptyRow.style.display = visibleCount === 0 ? '' : 'none';
+        }
     }
 
     // Gestion du toggle des métriques secondaires

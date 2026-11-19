@@ -40,8 +40,8 @@
                         @if($activeEntreprise)
                             @php $subEnt = $activeEntreprise->abonnementActuel(); @endphp
                             <div class="d-flex align-items-center gap-3 mb-4">
-                                @if($activeEntreprise->logo)
-                                    <img src="{{ asset($activeEntreprise->logo) }}" alt="Logo" class="rounded border p-1" style="width: 64px; height: 64px; object-fit: contain;">
+                                @if($activeEntreprise->logo || !empty($activeEntreprise->parametres['logo_base64']))
+                                    <img src="{{ $activeEntreprise->logo_url }}" alt="Logo" class="rounded border p-1" style="width: 64px; height: 64px; object-fit: contain;">
                                 @else
                                     <div class="rounded bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold fs-3" style="width: 64px; height: 64px;">
                                         {{ strtoupper(substr($activeEntreprise->nom, 0, 1)) }}

@@ -170,5 +170,133 @@ class Entreprise extends Model
             ->count();
         return $currentCount < $sub->max_produits;
     }
+
+    /**
+     * Résout le logo de l'entreprise sous forme de base64 data URI pour les tickets et reçus PDF.
+     * Cette méthode est immunisée contre les pertes lors des déploiements (git pull, conteneurs, releases).
+     */
+    public function getLogoBase64(): ?string
+    {
+        // 1. Priorité absolue : base64 persisté en base de données (résiste à tout redéploiement)
+        if (! empty($this->parametres['logo_base64'])) {
+            return $this->parametres['logo_base64'];
+        }
+
+        if (empty($this->logo)) {
+            return $this->getFallbackLogoBase64();
+        }
+
+        // Si la colonne logo contient déjà du base64 data:image
+        if (str_starts_with($this->logo, 'data:image')) {
+            return $this->logo;
+        }
+
+        // 2. Recherche sur tous les chemins de stockage possibles sur le disque
+        $possiblePaths = [
+            public_path($this->logo),
+            public_path(ltrim($this->logo, '/\\')),
+            storage_path('app/public/' . ltrim($this->logo, '/\\')),
+            storage_path('app/public/' . str_replace(['storage/', 'public/'], '', ltrim($this->logo, '/\\'))),
+            public_path('uploads/logos_entreprises/' . basename($this->logo)),
+            storage_path('app/public/logos_entreprises/' . basename($this->logo)),
+        ];
+
+        foreach ($possiblePaths as $path) {
+            if ($path && file_exists($path) && ! is_dir($path)) {
+                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                $mime = match ($ext) {
+                    'jpg', 'jpeg' => 'image/jpeg',
+                    'png'         => 'image/png',
+                    'webp'        => 'image/webp',
+                    'gif'         => 'image/gif',
+                    'svg'         => 'image/svg+xml',
+                    default       => 'image/png',
+                };
+                $content = @file_get_contents($path);
+                if ($content !== false && strlen($content) > 0) {
+                    $base64 = 'data:' . $mime . ';base64,' . base64_encode($content);
+                    // Sauvegarde automatique en base pour immuniser les prochains déploiements
+                    try {
+                        $params = $this->parametres ?? [];
+                        if (empty($params['logo_base64'])) {
+                            $params['logo_base64'] = $base64;
+                            $this->updateQuietly(['parametres' => $params]);
+                        }
+                    } catch (\Throwable $e) {
+                        // ignore
+                    }
+                    return $base64;
+                }
+            }
+        }
+
+        // 3. Si logo est une URL distante
+        if (filter_var($this->logo, FILTER_VALIDATE_URL)) {
+            try {
+                $ctx = stream_context_create(['http' => ['timeout' => 3]]);
+                $content = @file_get_contents($this->logo, false, $ctx);
+                if ($content !== false && strlen($content) > 0) {
+                    $ext = strtolower(pathinfo(parse_url($this->logo, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+                    $mime = match ($ext) {
+                        'jpg', 'jpeg' => 'image/jpeg',
+                        'png'         => 'image/png',
+                        'webp'        => 'image/webp',
+                        default       => 'image/png',
+                    };
+                    return 'data:' . $mime . ';base64,' . base64_encode($content);
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
+
+        return $this->getFallbackLogoBase64();
+    }
+
+    /**
+     * Logo par défaut (fallback)
+     */
+    public function getFallbackLogoBase64(): ?string
+    {
+        $fallbacks = [
+            public_path('assets/images/logo-dark.png'),
+            public_path('assets/images/logo-light.png'),
+            public_path('assets/images/logo-sm.png'),
+        ];
+
+        foreach ($fallbacks as $path) {
+            if (file_exists($path) && ! is_dir($path)) {
+                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                $mime = $ext === 'png' ? 'image/png' : 'image/jpeg';
+                $content = @file_get_contents($path);
+                if ($content !== false) {
+                    return 'data:' . $mime . ';base64,' . base64_encode($content);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * URL du logo pour l'affichage HTML dans les vues
+     */
+    public function getLogoUrlAttribute(): string
+    {
+        if (! empty($this->parametres['logo_base64'])) {
+            return $this->parametres['logo_base64'];
+        }
+
+        if (! empty($this->logo)) {
+            if (file_exists(public_path($this->logo))) {
+                return asset($this->logo);
+            }
+            if (file_exists(storage_path('app/public/' . $this->logo))) {
+                return asset('storage/' . $this->logo);
+            }
+        }
+
+        return asset('assets/images/logo-dark.png');
+    }
 }
 
